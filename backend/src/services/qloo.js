@@ -1,0 +1,153 @@
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const QLOO_API_KEY = process.env.QLOO_API_KEY;
+const QLOO_BASE_URL = process.env.QLOO_BASE_URL;
+
+/**
+ * Search for Qloo entity IDs by name
+ */
+export async function searchQlooEntities(entityName, types = []) {
+  // Skip obviously invalid entities
+  if (!entityName || entityName.length < 3 || /[—:]/.test(entityName)) {
+    return [];
+  }
+
+  const params = new URLSearchParams({
+    query: entityName,
+    limit: '3'
+  });
+
+  // Qloo expects full URN format for types
+  if (types.length > 0) {
+    const urnTypes = types.map(t => t.startsWith('urn:') ? t : `urn:entity:${t}`);
+    params.append('types', urnTypes.join(','));
+  }
+
+  try {
+    const response = await fetch(`${QLOO_BASE_URL}/search?${params}`, {
+      headers: { 'X-Api-Key': QLOO_API_KEY }
+    });
+
+    if (!response.ok) {
+      // Silently skip 400 errors (invalid entity format)
+      if (response.status === 400) return [];
+      console.error(`Qloo search failed for "${entityName}":`, response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    return data.results || [];
+  } catch (error) {
+    // Silently skip network errors
+    return [];
+  }
+}
+
+/**
+ * Get cross-category insights for an entity array
+ */
+export async function getInsights(entityIds, filterType = 'urn:entity:brand', options = {}) {
+  const params = new URLSearchParams({
+    'filter.type': filterType,
+    'limit': options.limit || '20'
+  });
+
+  // Add entity signals
+  if (entityIds && entityIds.length > 0) {
+    entityIds.forEach(id => {
+      params.append('signal.interests.entities', id);
+    });
+  }
+
+  // Add demographic filters if provided
+  if (options.demographics) {
+    Object.keys(options.demographics).forEach(key => {
+      params.append(`signal.demographics.${key}`, options.demographics[key]);
+    });
+  }
+
+  const response = await fetch(`${QLOO_BASE_URL}/v2/insights?${params}`, {
+    headers: { 'X-Api-Key': QLOO_API_KEY }
+  });
+
+  if (!response.ok) {
+    console.error('Qloo insights failed:', response.status);
+    return null;
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get taste tags for an entity array
+ */
+export async function getTasteTags(entityIds) {
+  const params = new URLSearchParams({
+    'filter.type': 'urn:tag',
+    'limit': '30'
+  });
+
+  entityIds.forEach(id => {
+    params.append('signal.interests.entities', id);
+  });
+
+  const response = await fetch(`${QLOO_BASE_URL}/v2/insights?${params}`, {
+    headers: { 'X-Api-Key': QLOO_API_KEY }
+  });
+
+  if (!response.ok) {
+    console.error('Qloo taste tags failed:', response.status);
+    return [];
+  }
+
+  const data = await response.json();
+  return data.results?.entities || [];
+}
+
+/**
+ * Match extracted entities to Qloo IDs
+ * Returns array of { name, qlooId, type, category }
+ */
+export async function enrichEntitiesWithQloo(entities) {
+  const enriched = [];
+
+  // Map entity categories to Qloo types (using full URN format)
+  const typeMap = {
+    people: ['urn:entity:person'],
+    brands: ['urn:entity:brand'],
+    artists: ['urn:entity:artist'],
+    places: ['urn:entity:place', 'urn:entity:locality'],
+    movies: ['urn:entity:movie'],
+    tvShows: ['urn:entity:tv_show'],
+    podcasts: ['urn:entity:podcast'],
+    books: ['urn:entity:book']
+  };
+
+  for (const [category, names] of Object.entries(entities)) {
+    if (!names || names.length === 0) continue;
+    const qlooTypes = typeMap[category] || [];
+    
+    for (const name of names) {
+      if (!name || name.length < 2) continue;
+      
+      const results = await searchQlooEntities(name, qlooTypes);
+      
+      if (results.length > 0) {
+        enriched.push({
+          name: results[0].name || name,
+          qlooId: results[0].entity_id,
+          type: results[0].subtype || results[0].type,
+          category: category
+        });
+      }
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  return enriched;
+}

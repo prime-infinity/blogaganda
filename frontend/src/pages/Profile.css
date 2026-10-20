@@ -1,0 +1,151 @@
+.profile-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #667eea;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 30px;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #5568d3;
+  transform: translateX(-2px);
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 40px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+}
+
+.profile-header h1 {
+  margin: 0 0 20px;
+  font-size: 32px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 40px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.profile-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.profile-section h2 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  color: #333;
+}
+
+.tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.taste-tag {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.affinity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.affinity-card {
+  background: #f8f9ff;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #667eea;
+}
+
+.affinity-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.affinity-value {
+  background: #667eea;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  padding: 15px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-date {
+  color: #999;
+  font-size: 13px;
+}
+
+.empty-profile {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 12px;
+}
+
+.empty-profile h2 {
+  color: #667eea;
+}
+
+.empty-profile p {
+  color: #666;
+}
