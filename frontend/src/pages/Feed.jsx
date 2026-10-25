@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getArticles, getRecommendations, trackRead, getUserProfile } from '../api/client';
+import { getArticles, getRecommendations, trackRead, getUserProfile, getReadingHistory } from '../api/client';
 import './Feed.css';
 
 export default function Feed() {
@@ -12,6 +12,7 @@ export default function Feed() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('all'); // 'all' | 'recommended'
+  const [readArticles, setReadArticles] = useState(new Set());
 
   useEffect(() => {
     loadData();
@@ -19,16 +20,24 @@ export default function Feed() {
 
   const loadData = async () => {
     try {
-      const [articlesRes, recsRes, profileRes] = await Promise.all([
+      const [articlesRes, recsRes, profileRes, historyRes] = await Promise.all([
         getArticles(200),
         getRecommendations(),
-        getUserProfile()
+        getUserProfile(),
+        getReadingHistory()
       ]);
       setArticles(articlesRes.data.articles);
       setRecommendations(recsRes.data.recommendations);
       setProfile(profileRes.data.profile);
+      
+      // Populate read articles set
+      const readIds = historyRes.data.history?.map(h => h.article_id) || [];
+      setReadArticles(new Set(readIds));
     } catch (error) {
       console.error('Failed to load data:', error);
+      // Still set articles even if other calls fail
+      setArticles([]);
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }
@@ -36,10 +45,21 @@ export default function Feed() {
 
   const handleReadArticle = async (articleId) => {
     try {
+      // Optimistic update
+      setReadArticles(prev => new Set([...prev, articleId]));
+      
       await trackRead(articleId);
+      
+      // Reload data to get updated recommendations and profile
       await loadData();
     } catch (error) {
       console.error('Failed to track read:', error);
+      // Revert optimistic update on error
+      setReadArticles(prev => {
+        const next = new Set(prev);
+        next.delete(articleId);
+        return next;
+      });
     }
   };
 
@@ -121,8 +141,9 @@ export default function Feed() {
                       <button 
                         onClick={() => handleReadArticle(article.id)}
                         className="read-btn"
+                        disabled={readArticles.has(article.id)}
                       >
-                        ✓ Mark as Read
+                        {readArticles.has(article.id) ? '✓ Read' : '✓ Mark as Read'}
                       </button>
                     </div>
                   </div>

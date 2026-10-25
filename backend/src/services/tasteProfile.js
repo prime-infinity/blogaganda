@@ -137,15 +137,25 @@ export async function generateRecommendations(userId) {
       return [];
     }
 
+    // Get articles user has already read
+    const { data: readArticles } = await supabaseAdmin
+      .from('reading_history')
+      .select('article_id')
+      .eq('user_id', userId);
+
+    const readIds = readArticles?.map(r => r.article_id) || [];
+
     // Get all articles the user hasn't read yet
-    const { data: unreadArticles, error: articlesError } = await supabaseAdmin
+    const { data: allArticles, error: articlesError } = await supabaseAdmin
       .from('articles')
       .select('id, title, entities')
-      .not('id', 'in', `(SELECT article_id FROM reading_history WHERE user_id = '${userId}')`)
       .order('published_at', { ascending: false })
       .limit(100);
 
     if (articlesError) throw articlesError;
+
+    // Filter out read articles
+    const unreadArticles = allArticles.filter(article => !readIds.includes(article.id));
 
     // Score articles based on entity overlap with user's affinity profile
     const recommendations = [];
