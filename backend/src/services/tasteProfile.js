@@ -46,33 +46,47 @@ export async function updateUserTasteProfile(userId) {
     const uniqueEntities = [...new Set(entityArray)];
     console.log(`📊 Building profile from ${uniqueEntities.length} unique entities`);
 
-    // Get cross-category insights from Qloo
-    const [brandInsights, placeInsights, artistInsights, movieInsights, tasteTags] = await Promise.all([
-      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 15 }),
-      getInsights(uniqueEntities, 'urn:entity:place', { limit: 15 }),
+    // Get cross-category insights from Qloo (all supported entity types)
+    const [artistInsights, bookInsights, brandInsights, destinationInsights, movieInsights, personInsights, placeInsights, podcastInsights, tvInsights, videoGameInsights, tasteTags] = await Promise.all([
       getInsights(uniqueEntities, 'urn:entity:artist', { limit: 15 }),
+      getInsights(uniqueEntities, 'urn:entity:book', { limit: 10 }),
+      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 15 }),
+      getInsights(uniqueEntities, 'urn:entity:destination', { limit: 10 }),
       getInsights(uniqueEntities, 'urn:entity:movie', { limit: 10 }),
+      getInsights(uniqueEntities, 'urn:entity:person', { limit: 15 }),
+      getInsights(uniqueEntities, 'urn:entity:place', { limit: 15 }),
+      getInsights(uniqueEntities, 'urn:entity:podcast', { limit: 10 }),
+      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 10 }),
+      getInsights(uniqueEntities, 'urn:entity:video_game', { limit: 10 }),
       getTasteTags(uniqueEntities)
     ]);
 
-    // Build affinity profile
+    // Build affinity profile (all Qloo entity types)
     const affinities = {
-      brands: brandInsights?.results?.entities || [],
-      places: placeInsights?.results?.entities || [],
       artists: artistInsights?.results?.entities || [],
+      books: bookInsights?.results?.entities || [],
+      brands: brandInsights?.results?.entities || [],
+      destinations: destinationInsights?.results?.entities || [],
       movies: movieInsights?.results?.entities || [],
+      people: personInsights?.results?.entities || [],
+      places: placeInsights?.results?.entities || [],
+      podcasts: podcastInsights?.results?.entities || [],
+      tvShows: tvInsights?.results?.entities || [],
+      videoGames: videoGameInsights?.results?.entities || [],
       updatedAt: new Date().toISOString()
     };
 
     // Extract taste tags
     const tags = tasteTags.map(tag => tag.name).filter(Boolean);
 
-    // Calculate overall affinity score (average of top results)
+    // Calculate overall affinity score (average of top results across categories)
     const allScores = [
+      ...(personInsights?.results?.entities || []).slice(0, 5),
       ...(brandInsights?.results?.entities || []).slice(0, 5),
       ...(placeInsights?.results?.entities || []).slice(0, 5),
-      ...(artistInsights?.results?.entities || []).slice(0, 5)
-    ].map(e => e.affinity || 0);
+      ...(artistInsights?.results?.entities || []).slice(0, 3),
+      ...(movieInsights?.results?.entities || []).slice(0, 3)
+    ].map(e => e.query?.affinity || 0);
 
     const affinityScore = allScores.length > 0
       ? allScores.reduce((a, b) => a + b, 0) / allScores.length
@@ -114,7 +128,7 @@ export async function updateUserTasteProfile(userId) {
 
     if (profileError) throw profileError;
 
-    console.log(`✅ Profile updated: ${affinities.brands.length} brands, ${affinities.places.length} places, score ${affinityScore.toFixed(2)}`);
+    console.log(`✅ Profile updated: ${affinities.people.length} people, ${affinities.brands.length} brands, ${affinities.places.length} places, ${affinities.artists.length} artists, score ${affinityScore.toFixed(2)}`);
 
     return profile;
   } catch (error) {
@@ -166,12 +180,12 @@ export async function generateRecommendations(userId) {
     const recommendations = [];
     const userEntities = new Set(profile.entity_array);
     
-    // Build affinity map from user's Qloo results
+    // Build affinity map from user's Qloo results (all entity types)
     const affinityMap = new Map();
-    ['brands', 'places', 'artists', 'movies'].forEach(category => {
+    ['artists', 'books', 'brands', 'destinations', 'movies', 'people', 'places', 'podcasts', 'tvShows', 'videoGames'].forEach(category => {
       profile.qloo_affinities[category]?.forEach(entity => {
-        if (entity.entity_id && entity.affinity) {
-          affinityMap.set(entity.entity_id, entity.affinity);
+        if (entity.entity_id && entity.query?.affinity) {
+          affinityMap.set(entity.entity_id, entity.query.affinity);
         }
       });
     });

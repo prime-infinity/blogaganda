@@ -1,0 +1,18 @@
+HOW QLOO HELPED IN ARTICLE SEEDING
+===================================
+
+WITHOUT QLOO:
+- OpenAI extracts "Leica", "Oura Ring", "British Airways" as text strings
+- No way to verify they're real entities (could be hallucinations)
+- No way to connect them across articles
+- Can't use them for recommendations (just disconnected text)
+
+WITH QLOO:
+- Validates entities are real (searched Qloo database, got matches)
+- Provides unique IDs (e.g., 75105C50-F33A-4507-BAB8-E15A2A9B4596 for Leica)
+- Enables cross-article matching (same entity in different articles = same ID)
+- Powers future recommendations (structured data vs raw text)
+
+RESULT:
+Qloo turned raw extracted text into structured, validated, connected data that can power 
+cross-category taste intelligence and recommendations.

@@ -31,7 +31,6 @@ router.post('/read', requireAuth, async (req, res) => {
 
     // Generate new recommendations
     if (profile) {
-      console.log(`🎯 Generating recommendations for user ${userId}...`);
       await generateRecommendations(userId);
     } else {
       console.log(`⚠️ No profile generated - need more articles with entities`);
