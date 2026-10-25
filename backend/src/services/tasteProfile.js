@@ -46,33 +46,23 @@ export async function updateUserTasteProfile(userId) {
     const uniqueEntities = [...new Set(entityArray)];
     console.log(`📊 Building profile from ${uniqueEntities.length} unique entities`);
 
-    // Get cross-category insights from Qloo (all supported entity types)
-    const [artistInsights, bookInsights, brandInsights, destinationInsights, movieInsights, personInsights, placeInsights, podcastInsights, tvInsights, videoGameInsights, tasteTags] = await Promise.all([
-      getInsights(uniqueEntities, 'urn:entity:artist', { limit: 15 }),
-      getInsights(uniqueEntities, 'urn:entity:book', { limit: 10 }),
-      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 15 }),
-      getInsights(uniqueEntities, 'urn:entity:destination', { limit: 10 }),
-      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 10 }),
-      getInsights(uniqueEntities, 'urn:entity:person', { limit: 15 }),
-      getInsights(uniqueEntities, 'urn:entity:place', { limit: 15 }),
-      getInsights(uniqueEntities, 'urn:entity:podcast', { limit: 10 }),
-      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 10 }),
-      getInsights(uniqueEntities, 'urn:entity:video_game', { limit: 10 }),
+    // Get cross-category insights from Qloo (entertainment/lifestyle focus)
+    const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, tasteTags] = await Promise.all([
+      getInsights(uniqueEntities, 'urn:entity:person', { limit: 20 }),     // Celebrities, actors, chefs
+      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 20 }),      // Fashion, luxury, restaurants
+      getInsights(uniqueEntities, 'urn:entity:place', { limit: 20 }),      // Venues, destinations
+      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 15 }),      // Films
+      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 15 }),    // TV/streaming
       getTasteTags(uniqueEntities)
     ]);
 
-    // Build affinity profile (all Qloo entity types)
+    // Build affinity profile (entertainment/lifestyle)
     const affinities = {
-      artists: artistInsights?.results?.entities || [],
-      books: bookInsights?.results?.entities || [],
-      brands: brandInsights?.results?.entities || [],
-      destinations: destinationInsights?.results?.entities || [],
-      movies: movieInsights?.results?.entities || [],
-      people: personInsights?.results?.entities || [],
-      places: placeInsights?.results?.entities || [],
-      podcasts: podcastInsights?.results?.entities || [],
-      tvShows: tvInsights?.results?.entities || [],
-      videoGames: videoGameInsights?.results?.entities || [],
+      people: personInsights?.results?.entities || [],      // Actors, chefs, celebrities
+      brands: brandInsights?.results?.entities || [],       // Fashion, luxury, restaurants
+      places: placeInsights?.results?.entities || [],       // Venues, destinations
+      movies: movieInsights?.results?.entities || [],       // Films
+      tvShows: tvInsights?.results?.entities || [],         // TV shows
       updatedAt: new Date().toISOString()
     };
 
@@ -83,9 +73,7 @@ export async function updateUserTasteProfile(userId) {
     const allScores = [
       ...(personInsights?.results?.entities || []).slice(0, 5),
       ...(brandInsights?.results?.entities || []).slice(0, 5),
-      ...(placeInsights?.results?.entities || []).slice(0, 5),
-      ...(artistInsights?.results?.entities || []).slice(0, 3),
-      ...(movieInsights?.results?.entities || []).slice(0, 3)
+      ...(placeInsights?.results?.entities || []).slice(0, 5)
     ].map(e => e.query?.affinity || 0);
 
     const affinityScore = allScores.length > 0
@@ -128,7 +116,7 @@ export async function updateUserTasteProfile(userId) {
 
     if (profileError) throw profileError;
 
-    console.log(`✅ Profile updated: ${affinities.people.length} people, ${affinities.brands.length} brands, ${affinities.places.length} places, ${affinities.artists.length} artists, score ${affinityScore.toFixed(2)}`);
+    console.log(`✅ Profile updated: ${affinities.people.length} people, ${affinities.brands.length} brands, ${affinities.places.length} places, score ${affinityScore.toFixed(2)}`);
 
     return profile;
   } catch (error) {
@@ -180,15 +168,42 @@ export async function generateRecommendations(userId) {
     const recommendations = [];
     const userEntities = new Set(profile.entity_array);
     
-    // Build affinity map from user's Qloo results (all entity types)
+    // Build affinity map from user's Qloo results
     const affinityMap = new Map();
-    ['artists', 'books', 'brands', 'destinations', 'movies', 'people', 'places', 'podcasts', 'tvShows', 'videoGames'].forEach(category => {
+    const predictedEntities = [];
+    ['people', 'brands', 'places', 'movies', 'tvShows'].forEach(category => {
       profile.qloo_affinities[category]?.forEach(entity => {
         if (entity.entity_id && entity.query?.affinity) {
           affinityMap.set(entity.entity_id, entity.query.affinity);
+          predictedEntities.push({
+            name: entity.name,
+            id: entity.entity_id,
+            category,
+            affinity: entity.query.affinity.toFixed(3)
+          });
         }
       });
     });
+
+    console.log(`🔍 Qloo predicted ${affinityMap.size} entities (top 10):`);
+    predictedEntities.slice(0, 10).forEach(e => {
+      console.log(`   ${e.category.toUpperCase()}: ${e.name} (${e.id}, affinity: ${e.affinity})`);
+    });
+
+    // Log article entity IDs for debugging
+    const allArticleEntityIds = new Set();
+    unreadArticles.forEach(article => {
+      if (article.entities) {
+        article.entities.forEach(entity => {
+          if (entity.qlooId) allArticleEntityIds.add(entity.qlooId);
+        });
+      }
+    });
+    console.log(`📚 Articles contain ${allArticleEntityIds.size} unique entities`);
+    
+    // Find overlap between predicted and article entities
+    const overlap = Array.from(affinityMap.keys()).filter(id => allArticleEntityIds.has(id));
+    console.log(`🎯 Overlap: ${overlap.length} entities (${overlap.slice(0, 3).join(', ')}${overlap.length > 3 ? '...' : ''})`);
 
     for (const article of unreadArticles) {
       if (!article.entities || article.entities.length === 0) continue;

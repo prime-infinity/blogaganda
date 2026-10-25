@@ -116,16 +116,13 @@ export async function enrichEntitiesWithQloo(entities) {
 
   console.log(`🔎 Enriching with Qloo...`);
 
-  // Map entity categories to Qloo types (using full URN format)
+  // Map entity categories to Qloo types for entertainment/lifestyle
   const typeMap = {
-    people: ['urn:entity:person'],
-    brands: ['urn:entity:brand'],
-    artists: ['urn:entity:artist'],
-    places: ['urn:entity:place', 'urn:entity:locality'],
-    movies: ['urn:entity:movie'],
-    tvShows: ['urn:entity:tv_show'],
-    podcasts: ['urn:entity:podcast'],
-    books: ['urn:entity:book']
+    people: ['urn:entity:person'],        // Actors, directors, chefs, celebrities
+    brands: ['urn:entity:brand'],         // Fashion, luxury, restaurant brands
+    places: ['urn:entity:place'],         // Restaurants, hotels, destinations
+    movies: ['urn:entity:movie'],         // Films
+    tvShows: ['urn:entity:tv_show']       // TV shows, streaming content
   };
 
   for (const [category, names] of Object.entries(entities)) {

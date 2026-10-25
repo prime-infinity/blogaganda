@@ -6,14 +6,51 @@ dotenv.config();
 const NEWS_API_KEY = process.env.NEWS_API_KEY;
 const NEWS_API_URL = 'https://newsapi.org/v2';
 
+// ⚙️ CHANGE THIS BEFORE EACH SEED RUN (1-5)
+const DATE_PERIOD = 1;
+
+/**
+ * Get date range for specified period
+ * Period 1: Last 7 days
+ * Period 2: 8-30 days ago
+ * Period 3: 31-60 days ago
+ * Period 4: 61-90 days ago
+ * Period 5: 91-120 days ago
+ */
+function getDateRange(period) {
+  const now = new Date();
+  const dateRanges = {
+    1: { from: 7, to: 0 },      // Last week
+    2: { from: 30, to: 8 },     // 8-30 days ago
+    3: { from: 60, to: 31 },    // 31-60 days ago
+    4: { from: 90, to: 61 },    // 61-90 days ago
+    5: { from: 120, to: 91 }    // 91-120 days ago
+  };
+
+  const range = dateRanges[period] || dateRanges[1];
+  
+  const from = new Date(now);
+  from.setDate(from.getDate() - range.from);
+  
+  const to = new Date(now);
+  to.setDate(to.getDate() - range.to);
+
+  return {
+    from: from.toISOString().split('T')[0],
+    to: to.toISOString().split('T')[0]
+  };
+}
+
 /**
  * Fetch diverse articles from multiple topics
  */
 export async function fetchDiverseArticles(count = 100) {
+  const dateRange = getDateRange(DATE_PERIOD);
+  console.log(`📅 Fetching articles from ${dateRange.from} to ${dateRange.to} (Period ${DATE_PERIOD})`);
+  
   const topics = [
-    'health OR wellness OR fitness',
-    'science OR space OR research',
-    'business OR startup OR entrepreneur'
+    'movies OR television OR celebrities OR Hollywood OR entertainment OR streaming',
+    'restaurants OR dining OR travel OR luxury OR fashion OR lifestyle OR hotels'
   ];
 
   const allArticles = [];
@@ -26,7 +63,9 @@ export async function fetchDiverseArticles(count = 100) {
         q: topic,
         language: 'en',
         sortBy: 'publishedAt',
-        pageSize: articlesPerTopic.toString()
+        pageSize: articlesPerTopic.toString(),
+        from: dateRange.from,
+        to: dateRange.to
       });
 
       const response = await fetch(`${NEWS_API_URL}/everything?${params}`);
