@@ -114,6 +114,8 @@ export async function getTasteTags(entityIds) {
 export async function enrichEntitiesWithQloo(entities) {
   const enriched = [];
 
+  console.log(`🔎 Enriching with Qloo...`);
+
   // Map entity categories to Qloo types (using full URN format)
   const typeMap = {
     people: ['urn:entity:person'],
@@ -142,6 +144,9 @@ export async function enrichEntitiesWithQloo(entities) {
           type: results[0].subtype || results[0].type,
           category: category
         });
+        console.log(`   ✓ ${name} → ${results[0].entity_id}`);
+      } else {
+        console.log(`   ✗ ${name} (not found in Qloo)`);
       }
       
       // Small delay to avoid rate limiting
@@ -149,5 +154,6 @@ export async function enrichEntitiesWithQloo(entities) {
     }
   }
 
+  console.log(`🎯 Enriched ${enriched.length} entities with Qloo IDs\n`);
   return enriched;
 }

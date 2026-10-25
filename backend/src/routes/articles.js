@@ -7,18 +7,21 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Seed 100 articles from NewsAPI
+// Seed articles from NewsAPI
 router.post('/seed', requireAuth, async (req, res) => {
   try {
-    console.log('Fetching 100 articles from NewsAPI...');
-    const articles = await fetchDiverseArticles();
+    console.log('\n🌱 SEEDING ARTICLES FROM NEWSAPI...');
+    console.log('📰 Fetching 50 articles...');
+    const articles = await fetchDiverseArticles(50);
     
-    console.log(`Fetched ${articles.length} articles, processing...`);
+    console.log(`\n📦 Fetched ${articles.length} articles, processing...\n`);
     let totalAdded = 0;
     let totalSkipped = 0;
+    let noEntitiesSkipped = 0;
 
     for (const article of articles) {
       if (!article.title || !article.url) {
+        console.log(`⏭️  Skipping article (missing title/url)`);
         totalSkipped++;
         continue;
       }
@@ -31,16 +34,28 @@ router.post('/seed', requireAuth, async (req, res) => {
         .single();
 
       if (existing) {
+        console.log(`⏭️  Skipping "${article.title.slice(0, 50)}..." (duplicate)`);
         totalSkipped++;
         continue;
       }
 
-      // Extract entities from content
-      const content = `${article.title}. ${article.description || ''} ${article.content || ''}`;
-      const extractedEntities = await extractEntities(content);
+      // Extract entities with title and description
+      const extractedEntities = await extractEntities(
+        article.content || '',
+        article.title,
+        article.description || ''
+      );
+      
       const qlooEntities = await enrichEntitiesWithQloo(extractedEntities);
       
-      console.log(`✅ ${article.title.slice(0, 60)}... → ${qlooEntities.length} entities`);
+      // ONLY save articles with entities
+      if (qlooEntities.length === 0) {
+        console.log(`🚫 Skipping "${article.title.slice(0, 50)}..." (no entities found)\n`);
+        noEntitiesSkipped++;
+        continue;
+      }
+      
+      console.log(`💾 Saving "${article.title.slice(0, 50)}..." with ${qlooEntities.length} entities`);
 
       // Insert article
       const { error } = await supabaseAdmin
@@ -60,17 +75,25 @@ router.post('/seed', requireAuth, async (req, res) => {
 
       if (!error) {
         totalAdded++;
-        console.log(`Added: ${article.title}`);
+        console.log(`✅ Added successfully\n`);
+      } else {
+        console.error(`❌ Failed to save:`, error.message, '\n');
       }
     }
 
+    console.log(`\n✨ SEEDING COMPLETE!`);
+    console.log(`   📊 Added: ${totalAdded} articles`);
+    console.log(`   ⏭️  Skipped duplicates: ${totalSkipped}`);
+    console.log(`   🚫 Skipped no entities: ${noEntitiesSkipped}\n`);
+
     res.json({ 
-      message: `Seeded ${totalAdded} articles (${totalSkipped} skipped/duplicates)`,
+      message: `Seeded ${totalAdded} articles with entities`,
       totalAdded,
-      totalSkipped
+      totalSkipped,
+      noEntitiesSkipped
     });
   } catch (error) {
-    console.error('Seed error:', error);
+    console.error('❌ Seed error:', error);
     res.status(500).json({ error: 'Failed to seed articles' });
   }
 });

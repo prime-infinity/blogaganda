@@ -26,14 +26,25 @@ router.post('/read', requireAuth, async (req, res) => {
     }
 
     // Update taste profile
+    console.log(`📊 Updating taste profile for user ${userId}...`);
     const profile = await updateUserTasteProfile(userId);
 
     // Generate new recommendations
     if (profile) {
+      console.log(`🎯 Generating recommendations for user ${userId}...`);
       await generateRecommendations(userId);
+    } else {
+      console.log(`⚠️ No profile generated - need more articles with entities`);
     }
 
-    res.json({ success: true, profile });
+    // Trim response - only send essential fields
+    const trimmedProfile = profile ? {
+      affinity_score: profile.affinity_score,
+      articles_read_count: profile.articles_read_count,
+      taste_tags: profile.taste_tags?.slice(0, 10) || []
+    } : null;
+
+    res.json({ success: true, profile: trimmedProfile });
   } catch (error) {
     console.error('Track read error:', error);
     res.status(500).json({ error: 'Failed to track reading' });

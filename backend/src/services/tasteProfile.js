@@ -20,7 +20,7 @@ export async function updateUserTasteProfile(userId) {
     if (historyError) throw historyError;
 
     if (!history || history.length < 2) {
-      console.log(`User ${userId} needs more reading history (${history?.length || 0} articles)`);
+      console.log(`⚠️ User ${userId} needs more articles (has ${history?.length || 0}, needs 2+)`);
       return null;
     }
 
@@ -38,12 +38,13 @@ export async function updateUserTasteProfile(userId) {
     });
 
     if (entityArray.length === 0) {
-      console.log(`No Qloo entities found for user ${userId}`);
+      console.log(`🚫 User ${userId} has 0 Qloo entities (articles have no recognized entities)`);
       return null;
     }
 
     // Deduplicate entities
     const uniqueEntities = [...new Set(entityArray)];
+    console.log(`📊 Building profile from ${uniqueEntities.length} unique entities`);
 
     // Get cross-category insights from Qloo
     const [brandInsights, placeInsights, artistInsights, movieInsights, tasteTags] = await Promise.all([
@@ -113,6 +114,8 @@ export async function updateUserTasteProfile(userId) {
 
     if (profileError) throw profileError;
 
+    console.log(`✅ Profile updated: ${affinities.brands.length} brands, ${affinities.places.length} places, score ${affinityScore.toFixed(2)}`);
+
     return profile;
   } catch (error) {
     console.error('Failed to update taste profile:', error);
@@ -133,9 +136,11 @@ export async function generateRecommendations(userId) {
       .single();
 
     if (profileError || !profile) {
-      console.log(`No taste profile found for user ${userId}`);
+      console.log(`⚠️ No taste profile found for user ${userId}`);
       return [];
     }
+
+    console.log(`🎯 Generating recommendations for user ${userId}...`);
 
     // Get articles user has already read
     const { data: readArticles } = await supabaseAdmin
@@ -205,6 +210,8 @@ export async function generateRecommendations(userId) {
     recommendations.sort((a, b) => b.affinity_score - a.affinity_score);
     const topRecs = recommendations.slice(0, 10);
 
+    console.log(`📋 Found ${recommendations.length} potential recommendations, keeping top ${topRecs.length}`);
+
     // Upsert recommendations
     if (topRecs.length > 0) {
       const { error: recError } = await supabaseAdmin
@@ -220,6 +227,9 @@ export async function generateRecommendations(userId) {
         );
 
       if (recError) console.error('Failed to save recommendations:', recError);
+      else console.log(`✅ Saved ${topRecs.length} recommendations to database`);
+    } else {
+      console.log(`⚠️ No recommendations generated (no matching articles found)`);
     }
 
     return topRecs;

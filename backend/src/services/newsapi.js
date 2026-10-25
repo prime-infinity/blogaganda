@@ -9,7 +9,7 @@ const NEWS_API_URL = 'https://newsapi.org/v2';
 /**
  * Fetch diverse articles from multiple topics
  */
-export async function fetchDiverseArticles() {
+export async function fetchDiverseArticles(count = 100) {
   const topics = [
     'health OR wellness OR fitness',
     'science OR space OR research',
@@ -17,7 +17,7 @@ export async function fetchDiverseArticles() {
   ];
 
   const allArticles = [];
-  const articlesPerTopic = 4; // 12 articles total (3 topics × 4)
+  const articlesPerTopic = Math.ceil(count / topics.length);
 
   for (const topic of topics) {
     try {
@@ -38,7 +38,7 @@ export async function fetchDiverseArticles() {
 
       const data = await response.json();
       if (data.articles) {
-        console.log(`Fetched ${data.articles.length} articles for: ${topic}`);
+        console.log(`📰 Fetched ${data.articles.length} articles for: ${topic}`);
         allArticles.push(...data.articles);
       }
     } catch (error) {
@@ -46,7 +46,7 @@ export async function fetchDiverseArticles() {
     }
   }
 
-  return allArticles;
+  return allArticles.slice(0, count);
 }
 
 /**
