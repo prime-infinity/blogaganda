@@ -78,7 +78,7 @@ router.post('/seed', requireAuth, async (req, res) => {
 // Get all articles
 router.get('/', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
 
     const { data: articles, error } = await supabaseAdmin

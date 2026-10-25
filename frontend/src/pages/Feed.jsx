@@ -20,7 +20,7 @@ export default function Feed() {
   const loadData = async () => {
     try {
       const [articlesRes, recsRes, profileRes] = await Promise.all([
-        getArticles(50),
+        getArticles(200),
         getRecommendations(),
         getUserProfile()
       ]);
@@ -36,8 +36,8 @@ export default function Feed() {
 
   const handleReadArticle = async (articleId) => {
     try {
-      await trackRead(articleId, 30, 80);
-      await loadData(); // Reload to get updated profile/recommendations
+      await trackRead(articleId);
+      await loadData();
     } catch (error) {
       console.error('Failed to track read:', error);
     }
@@ -91,41 +91,45 @@ export default function Feed() {
         </div>
       )}
 
-      <div className="articles-grid">
-        {displayArticles.length === 0 ? (
-          <div className="empty-state">
-            {view === 'recommended' 
-              ? 'Read a few articles to get personalized recommendations!'
-              : 'No articles available'}
-          </div>
-        ) : (
-          displayArticles.map((article) => (
-            <article key={article.id} className="article-card">
-              {article.image_url && (
-                <img src={article.image_url} alt={article.title} className="article-image" />
-              )}
-              <div className="article-content">
-                <h3>{article.title}</h3>
-                <p className="article-description">{article.description}</p>
-                {article.reason && (
-                  <div className="recommendation-reason">
-                    🎯 {article.reason} • Affinity: {article.affinity_score.toFixed(2)}
-                  </div>
-                )}
-                <div className="article-meta">
-                  <span className="source">{article.source}</span>
-                  <button 
-                    onClick={() => handleReadArticle(article.id)}
-                    className="read-btn"
-                  >
-                    Mark as Read
-                  </button>
-                </div>
+          <div className="articles-grid">
+            {displayArticles.length === 0 ? (
+              <div className="empty-state">
+                {view === 'recommended' 
+                  ? 'Read a few articles to get personalized recommendations!'
+                  : 'No articles available'}
               </div>
-            </article>
-          ))
-        )}
-      </div>
+            ) : (
+              displayArticles.map((article) => (
+                <article key={article.id} className="article-card">
+                  {article.image_url && (
+                    <img 
+                      src={article.image_url} 
+                      alt={article.title} 
+                      className="article-image"
+                    />
+                  )}
+                  <div className="article-content">
+                    <h3>{article.title}</h3>
+                    <p className="article-description">{article.description}</p>
+                    {article.reason && (
+                      <div className="recommendation-reason">
+                        🎯 {article.reason} • Affinity: {article.affinity_score.toFixed(2)}
+                      </div>
+                    )}
+                    <div className="article-meta">
+                      <span className="source">{article.source}</span>
+                      <button 
+                        onClick={() => handleReadArticle(article.id)}
+                        className="read-btn"
+                      >
+                        ✓ Mark as Read
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
     </div>
   );
 }
