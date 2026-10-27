@@ -1,0 +1,3 @@
+id,user_id,article_id,affinity_score,reason,created_at,shown_at,clicked
+73755e67-e713-4e28-9d24-a9d90dc7d363,0f4a5786-1fad-4861-92f7-9204fbc4249f,b0b071ff-fe76-471f-b1a8-5ae0dc0adf35,0.909,Matches your interest in: Disney+,2026-10-27 11:00:11.673668+00,,false
+9eb907ec-94fa-4209-a4f8-737ebf732345,0f4a5786-1fad-4861-92f7-9204fbc4249f,840ea578-c876-4374-badf-7afdb5ce4d61,0.917,Matches your interest in: Sony,2026-10-27 11:00:29.00695+00,,false

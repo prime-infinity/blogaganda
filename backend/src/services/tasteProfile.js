@@ -170,25 +170,38 @@ export async function generateRecommendations(userId) {
     
     // Build affinity map from user's Qloo results
     const affinityMap = new Map();
-    const predictedEntities = [];
+    const predictedByCategory = {
+      people: [],
+      brands: [],
+      places: [],
+      movies: [],
+      tvShows: []
+    };
+    
     ['people', 'brands', 'places', 'movies', 'tvShows'].forEach(category => {
       profile.qloo_affinities[category]?.forEach(entity => {
         if (entity.entity_id && entity.query?.affinity) {
           affinityMap.set(entity.entity_id, entity.query.affinity);
-          predictedEntities.push({
+          predictedByCategory[category].push({
             name: entity.name,
             id: entity.entity_id,
-            category,
             affinity: entity.query.affinity.toFixed(3)
           });
         }
       });
     });
 
-    console.log(`🔍 Qloo predicted ${affinityMap.size} entities (top 10):`);
-    predictedEntities.slice(0, 10).forEach(e => {
-      console.log(`   ${e.category.toUpperCase()}: ${e.name} (${e.id}, affinity: ${e.affinity})`);
+    console.log(`🔍 Qloo predicted ${affinityMap.size} entities across categories:\n`);
+    ['people', 'brands', 'places', 'movies', 'tvShows'].forEach(category => {
+      const top5 = predictedByCategory[category].slice(0, 5);
+      if (top5.length > 0) {
+        console.log(`   ${category.toUpperCase()}:`);
+        top5.forEach(e => {
+          console.log(`      ${e.name} (${e.id.slice(0, 8)}..., affinity: ${e.affinity})`);
+        });
+      }
     });
+    console.log('');
 
     // Log article entity IDs for debugging
     const allArticleEntityIds = new Set();
