@@ -11,8 +11,8 @@ const router = express.Router();
 router.post('/seed', requireAuth, async (req, res) => {
   try {
     console.log('\n🌱 SEEDING ARTICLES FROM NEWSAPI...');
-    console.log('📰 Fetching 50 articles...');
-    const articles = await fetchDiverseArticles(50);
+    console.log('📰 Fetching 100 articles...');
+    const articles = await fetchDiverseArticles(100);
     
     console.log(`\n📦 Fetched ${articles.length} articles, processing...\n`);
     let totalAdded = 0;

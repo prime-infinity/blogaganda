@@ -11,20 +11,20 @@ const DATE_PERIOD = 1;
 
 /**
  * Get date range for specified period
- * Period 1: Last 7 days
- * Period 2: 8-30 days ago
- * Period 3: 31-60 days ago
- * Period 4: 61-90 days ago
- * Period 5: 91-120 days ago
+ * Period 1: Last 30 days
+ * Period 2: 31-60 days ago
+ * Period 3: 61-90 days ago
+ * Period 4: 91-120 days ago
+ * Period 5: 121-150 days ago
  */
 function getDateRange(period) {
   const now = new Date();
   const dateRanges = {
-    1: { from: 7, to: 0 },      // Last week
-    2: { from: 30, to: 8 },     // 8-30 days ago
-    3: { from: 60, to: 31 },    // 31-60 days ago
-    4: { from: 90, to: 61 },    // 61-90 days ago
-    5: { from: 120, to: 91 }    // 91-120 days ago
+    1: { from: 30, to: 0 },      // Last 30 days
+    2: { from: 60, to: 31 },     // 31-60 days ago
+    3: { from: 90, to: 61 },     // 61-90 days ago
+    4: { from: 120, to: 91 },    // 91-120 days ago
+    5: { from: 150, to: 121 }    // 121-150 days ago
   };
 
   const range = dateRanges[period] || dateRanges[1];
@@ -54,7 +54,7 @@ export async function fetchDiverseArticles(count = 100) {
   ];
 
   const allArticles = [];
-  const articlesPerTopic = Math.ceil(count / topics.length);
+  const articlesPerTopic = 100; // Request 100 per topic, total 200, then slice to count
 
   for (const topic of topics) {
     try {
