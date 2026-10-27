@@ -48,12 +48,12 @@ export async function updateUserTasteProfile(userId) {
 
     // Get cross-category insights from Qloo (entertainment/lifestyle focus)
     const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, demographics, tasteTags] = await Promise.all([
-      getInsights(uniqueEntities, 'urn:entity:person', { limit: 20 }),     // Celebrities, actors, chefs
-      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 20 }),      // Fashion, luxury, restaurants
-      getInsights(uniqueEntities, 'urn:entity:place', { limit: 20 }),      // Venues, destinations
-      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 15 }),      // Films
-      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 15 }),    // TV/streaming
-      getDemographics(uniqueEntities),                                      // Age/gender predictions
+      getInsights(uniqueEntities, 'urn:entity:person', { limit: 5 }),     // Celebrities, actors, chefs
+      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 5 }),      // Fashion, luxury, restaurants
+      getInsights(uniqueEntities, 'urn:entity:place', { limit: 5 }),      // Venues, destinations
+      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 5 }),      // Films
+      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 5 }),    // TV/streaming
+      getDemographics(uniqueEntities),                                     // Age/gender predictions
       getTasteTags(uniqueEntities)
     ]);
 

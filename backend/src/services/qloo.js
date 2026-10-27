@@ -89,7 +89,7 @@ export async function findAudiences(entityIds, limit = 10) {
 export async function getInsights(entityIds, filterType = 'urn:entity:brand', options = {}) {
   const params = new URLSearchParams({
     'filter.type': filterType,
-    'limit': options.limit || '20'
+    'limit': options.limit
   });
 
   // Add entity signals
