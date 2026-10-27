@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { getInsights, getTasteTags, getDemographics, findAudiences } from './qloo.js';
+import { getInsights, getTasteTags, getDemographics } from './qloo.js';
 
 /**
  * Build or update user's taste profile based on reading history
@@ -47,14 +47,13 @@ export async function updateUserTasteProfile(userId) {
     console.log(`📊 Building profile from ${uniqueEntities.length} unique entities`);
 
     // Get cross-category insights from Qloo (entertainment/lifestyle focus)
-    const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, demographics, audiences, tasteTags] = await Promise.all([
+    const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, demographics, tasteTags] = await Promise.all([
       getInsights(uniqueEntities, 'urn:entity:person', { limit: 20 }),     // Celebrities, actors, chefs
       getInsights(uniqueEntities, 'urn:entity:brand', { limit: 20 }),      // Fashion, luxury, restaurants
       getInsights(uniqueEntities, 'urn:entity:place', { limit: 20 }),      // Venues, destinations
       getInsights(uniqueEntities, 'urn:entity:movie', { limit: 15 }),      // Films
       getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 15 }),    // TV/streaming
       getDemographics(uniqueEntities),                                      // Age/gender predictions
-      findAudiences(uniqueEntities, 10),                                    // Cultural segments
       getTasteTags(uniqueEntities)
     ]);
 
@@ -95,12 +94,8 @@ export async function updateUserTasteProfile(userId) {
       console.log(`📊 Demographics: ${ageGroup}, ${genderSkew}`);
     }
 
-    // Process audience segments
-    const audienceSegments = audiences?.results?.audiences || [];
-    const topAudiences = audienceSegments.slice(0, 5).map(aud => aud.name);
-    if (topAudiences.length > 0) {
-      console.log(`👥 Audience Segments: ${topAudiences.join(', ')}`);
-    }
+    // Audience segments feature disabled (deprecated Qloo endpoint)
+    const topAudiences = [];
 
     // Calculate overall affinity score (average of top results across categories)
     const allScores = [

@@ -1,3 +1,5 @@
 id,user_id,article_id,affinity_score,reason,created_at,shown_at,clicked
-73755e67-e713-4e28-9d24-a9d90dc7d363,0f4a5786-1fad-4861-92f7-9204fbc4249f,b0b071ff-fe76-471f-b1a8-5ae0dc0adf35,0.909,Matches your interest in: Disney+,2026-10-27 11:00:11.673668+00,,false
-9eb907ec-94fa-4209-a4f8-737ebf732345,0f4a5786-1fad-4861-92f7-9204fbc4249f,840ea578-c876-4374-badf-7afdb5ce4d61,0.917,Matches your interest in: Sony,2026-10-27 11:00:29.00695+00,,false
+4481289d-467d-4c25-8697-22920a7c359a,0f4a5786-1fad-4861-92f7-9204fbc4249f,7f2e2a4f-9f31-4175-9e17-7b86e2f4d4b9,0.907,Matches your interest in: Samsung,2026-10-27 15:18:18.700377+00,,false
+a1a43c03-ca2d-46e2-80b1-d04b40505847,0f4a5786-1fad-4861-92f7-9204fbc4249f,840ea578-c876-4374-badf-7afdb5ce4d61,0.938,Matches your interest in: Sony,2026-10-27 15:18:18.700377+00,,false
+b543d396-d47e-4368-8eca-9fd41291ae21,0f4a5786-1fad-4861-92f7-9204fbc4249f,c3a27f38-80f8-47ba-a896-feb9341db2d9,0.500,Matches your interest in: Eric Bauza,2026-10-27 15:18:59.153104+00,,false
+f5972ba4-135a-4e54-b754-d683a72016ac,0f4a5786-1fad-4861-92f7-9204fbc4249f,5e53b8ca-7d76-4646-bd34-ff62203851ed,0.897,Matches your interest in: Empire State Building,2026-10-27 15:18:18.700377+00,,false

@@ -75,29 +75,12 @@ export async function getDemographics(entityIds) {
 
 /**
  * Find audience segments that match entity array
+ * Note: /v2/audiences endpoint is deprecated. This function is disabled.
+ * Demographics API provides sufficient age/gender data for MVP.
  */
 export async function findAudiences(entityIds, limit = 10) {
-  const params = new URLSearchParams({
-    limit: limit.toString()
-  });
-
-  // Add entity signals
-  if (entityIds && entityIds.length > 0) {
-    entityIds.forEach(id => {
-      params.append('signal.interests.entities', id);
-    });
-  }
-
-  const response = await fetch(`${QLOO_BASE_URL}/v2/audiences?${params}`, {
-    headers: { 'X-Api-Key': QLOO_API_KEY }
-  });
-
-  if (!response.ok) {
-    console.error('Qloo audiences failed:', response.status);
-    return null;
-  }
-
-  return await response.json();
+  // Deprecated endpoint - returning empty result
+  return null;
 }
 
 /**
