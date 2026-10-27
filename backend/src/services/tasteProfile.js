@@ -19,8 +19,8 @@ export async function updateUserTasteProfile(userId) {
 
     if (historyError) throw historyError;
 
-    if (!history || history.length < 2) {
-      console.log(`⚠️ User ${userId} needs more articles (has ${history?.length || 0}, needs 2+)`);
+    if (!history || history.length < 1) {
+      console.log(`⚠️ User ${userId} needs more articles (has ${history?.length || 0}, needs 1+)`);
       return null;
     }
 

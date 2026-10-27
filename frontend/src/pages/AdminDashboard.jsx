@@ -147,6 +147,67 @@ export default function AdminDashboard() {
               {selectedUser.profile && (
                 <>
                   <div className="profile-section">
+                    <h3>📈 Profile Evolution - Affinity Drift Tracking</h3>
+                    {selectedUser.profile.profile_evolution?.length > 0 ? (
+                      <div className="evolution-container">
+                        <div className="evolution-chart">
+                          {selectedUser.profile.profile_evolution.map((snapshot, idx) => {
+                            const isLatest = idx === selectedUser.profile.profile_evolution.length - 1;
+                            return (
+                              <div key={idx} className={`evolution-snapshot ${isLatest ? 'latest' : ''}`}>
+                                <div className="snapshot-header">
+                                  <span className="snapshot-number">Read #{snapshot.articlesRead}</span>
+                                  <span className="snapshot-time">{new Date(snapshot.timestamp).toLocaleString()}</span>
+                                </div>
+                                <div className="snapshot-affinity">
+                                  Affinity: <strong>{snapshot.affinityScore}</strong>
+                                  {idx > 0 && (
+                                    <span className={`drift ${parseFloat(snapshot.affinityScore) > parseFloat(selectedUser.profile.profile_evolution[idx-1].affinityScore) ? 'up' : 'down'}`}>
+                                      {parseFloat(snapshot.affinityScore) > parseFloat(selectedUser.profile.profile_evolution[idx-1].affinityScore) ? '↑' : '↓'}
+                                      {Math.abs((parseFloat(snapshot.affinityScore) - parseFloat(selectedUser.profile.profile_evolution[idx-1].affinityScore)) * 100).toFixed(1)}%
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="snapshot-brands">
+                                  Top Brands: {snapshot.topBrands.join(', ')}
+                                </div>
+                                {snapshot.topTags?.length > 0 && (
+                                  <div className="snapshot-tags">
+                                    Tags: {snapshot.topTags.join(', ')}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="evolution-summary">
+                          <div className="summary-metric">
+                            <span className="metric-label">Total Drift:</span>
+                            <span className="metric-value">
+                              {((parseFloat(selectedUser.profile.profile_evolution[selectedUser.profile.profile_evolution.length - 1].affinityScore) - 
+                                 parseFloat(selectedUser.profile.profile_evolution[0].affinityScore)) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="summary-metric">
+                            <span className="metric-label">Engagement Velocity:</span>
+                            <span className="metric-value">
+                              {selectedUser.profile.profile_evolution.length} updates
+                            </span>
+                          </div>
+                          <div className="summary-metric">
+                            <span className="metric-label">Brand Shifts:</span>
+                            <span className="metric-value">
+                              {new Set(selectedUser.profile.profile_evolution.flatMap(s => s.topBrands)).size} unique brands
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="empty">Not enough reading history yet</div>
+                    )}
+                  </div>
+
+                  <div className="profile-section">
                     <h3>🏷️ Taste Tags</h3>
                     <div className="tags-display">
                       {selectedUser.profile.taste_tags?.length > 0 ? (

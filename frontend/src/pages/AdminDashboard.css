@@ -265,3 +265,130 @@
   color: #666;
   font-style: italic;
 }
+
+/* Profile Evolution Styles */
+.evolution-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.evolution-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.evolution-snapshot {
+  background: #16213e;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+  transition: all 0.2s;
+}
+
+.evolution-snapshot:hover {
+  background: #1a2642;
+  transform: translateX(3px);
+}
+
+.evolution-snapshot.latest {
+  border-left-color: #f093fb;
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+}
+
+.snapshot-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.snapshot-number {
+  color: #667eea;
+  font-weight: 700;
+}
+
+.snapshot-time {
+  color: #999;
+  font-size: 11px;
+}
+
+.snapshot-affinity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.snapshot-affinity strong {
+  color: #fff;
+  font-size: 16px;
+}
+
+.drift {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.drift.up {
+  background: #10b98144;
+  color: #10b981;
+}
+
+.drift.down {
+  background: #ef444444;
+  color: #ef4444;
+}
+
+.snapshot-brands {
+  color: #aaa;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.snapshot-tags {
+  color: #667eea;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.evolution-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  padding: 15px;
+  background: #16213e;
+  border-radius: 8px;
+}
+
+.summary-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
