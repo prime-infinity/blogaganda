@@ -87,9 +87,11 @@ export async function findAudiences(entityIds, limit = 10) {
  * Get cross-category insights for an entity array
  */
 export async function getInsights(entityIds, filterType = 'urn:entity:brand', options = {}) {
+  const limit = options.limit || 20;
+  
   const params = new URLSearchParams({
     'filter.type': filterType,
-    'limit': options.limit
+    'take': String(limit)  // Qloo uses 'take' parameter, not 'limit'
   });
 
   // Add entity signals
