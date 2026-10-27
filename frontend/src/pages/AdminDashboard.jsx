@@ -123,9 +123,26 @@ export default function AdminDashboard() {
                   <div>Email: {selectedUser.user.email}</div>
                   <div>Articles Read: {selectedUser.profile?.articles_read_count || 0}</div>
                   <div>Affinity Score: {(selectedUser.profile?.affinity_score || 0).toFixed(3)}</div>
+                  {selectedUser.profile?.predicted_demographics && (
+                    <>
+                      <div>Age Group: {selectedUser.profile.predicted_demographics.ageGroup}</div>
+                      <div>Gender: {selectedUser.profile.predicted_demographics.genderSkew}</div>
+                    </>
+                  )}
                   <div>Last Updated: {selectedUser.profile?.last_updated ? new Date(selectedUser.profile.last_updated).toLocaleDateString() : 'N/A'}</div>
                 </div>
               </div>
+
+              {selectedUser.profile?.audience_segments?.length > 0 && (
+                <div className="profile-section">
+                  <h3>👥 Audience Segments</h3>
+                  <div className="tags-display">
+                    {selectedUser.profile.audience_segments.map(segment => (
+                      <span key={segment} className="tag">{segment}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {selectedUser.profile && (
                 <>

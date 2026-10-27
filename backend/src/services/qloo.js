@@ -47,6 +47,60 @@ export async function searchQlooEntities(entityName, types = []) {
 }
 
 /**
+ * Get demographic predictions for an entity array
+ */
+export async function getDemographics(entityIds) {
+  const params = new URLSearchParams({
+    'filter.type': 'urn:demographics'
+  });
+
+  // Add entity signals
+  if (entityIds && entityIds.length > 0) {
+    entityIds.forEach(id => {
+      params.append('signal.interests.entities', id);
+    });
+  }
+
+  const response = await fetch(`${QLOO_BASE_URL}/v2/insights?${params}`, {
+    headers: { 'X-Api-Key': QLOO_API_KEY }
+  });
+
+  if (!response.ok) {
+    console.error('Qloo demographics failed:', response.status);
+    return null;
+  }
+
+  return await response.json();
+}
+
+/**
+ * Find audience segments that match entity array
+ */
+export async function findAudiences(entityIds, limit = 10) {
+  const params = new URLSearchParams({
+    limit: limit.toString()
+  });
+
+  // Add entity signals
+  if (entityIds && entityIds.length > 0) {
+    entityIds.forEach(id => {
+      params.append('signal.interests.entities', id);
+    });
+  }
+
+  const response = await fetch(`${QLOO_BASE_URL}/v2/audiences?${params}`, {
+    headers: { 'X-Api-Key': QLOO_API_KEY }
+  });
+
+  if (!response.ok) {
+    console.error('Qloo audiences failed:', response.status);
+    return null;
+  }
+
+  return await response.json();
+}
+
+/**
  * Get cross-category insights for an entity array
  */
 export async function getInsights(entityIds, filterType = 'urn:entity:brand', options = {}) {

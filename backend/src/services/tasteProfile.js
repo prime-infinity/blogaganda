@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { getInsights, getTasteTags } from './qloo.js';
+import { getInsights, getTasteTags, getDemographics, findAudiences } from './qloo.js';
 
 /**
  * Build or update user's taste profile based on reading history
@@ -47,12 +47,14 @@ export async function updateUserTasteProfile(userId) {
     console.log(`📊 Building profile from ${uniqueEntities.length} unique entities`);
 
     // Get cross-category insights from Qloo (entertainment/lifestyle focus)
-    const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, tasteTags] = await Promise.all([
+    const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, demographics, audiences, tasteTags] = await Promise.all([
       getInsights(uniqueEntities, 'urn:entity:person', { limit: 20 }),     // Celebrities, actors, chefs
       getInsights(uniqueEntities, 'urn:entity:brand', { limit: 20 }),      // Fashion, luxury, restaurants
       getInsights(uniqueEntities, 'urn:entity:place', { limit: 20 }),      // Venues, destinations
       getInsights(uniqueEntities, 'urn:entity:movie', { limit: 15 }),      // Films
       getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 15 }),    // TV/streaming
+      getDemographics(uniqueEntities),                                      // Age/gender predictions
+      findAudiences(uniqueEntities, 10),                                    // Cultural segments
       getTasteTags(uniqueEntities)
     ]);
 
@@ -68,6 +70,37 @@ export async function updateUserTasteProfile(userId) {
 
     // Extract taste tags
     const tags = tasteTags.map(tag => tag.name).filter(Boolean);
+
+    // Process demographics - find highest affinity age group
+    let predictedDemographics = null;
+    if (demographics?.results?.demographics?.[0]) {
+      const demoData = demographics.results.demographics[0].query;
+      
+      // Find highest age affinity
+      const ageScores = demoData.age || {};
+      const topAge = Object.entries(ageScores)
+        .sort(([, a], [, b]) => b - a)[0];
+      
+      const ageGroup = topAge ? topAge[0].replace(/_/g, ' ') : 'Unknown';
+      const genderSkew = (demoData.gender?.male || 0) > 0 ? 'Male-skewing' : 
+                         (demoData.gender?.female || 0) > 0 ? 'Female-skewing' : 'Balanced';
+      
+      predictedDemographics = {
+        ageGroup,
+        genderSkew,
+        ageAffinities: ageScores,
+        genderAffinities: demoData.gender || {}
+      };
+
+      console.log(`📊 Demographics: ${ageGroup}, ${genderSkew}`);
+    }
+
+    // Process audience segments
+    const audienceSegments = audiences?.results?.audiences || [];
+    const topAudiences = audienceSegments.slice(0, 5).map(aud => aud.name);
+    if (topAudiences.length > 0) {
+      console.log(`👥 Audience Segments: ${topAudiences.join(', ')}`);
+    }
 
     // Calculate overall affinity score (average of top results across categories)
     const allScores = [
@@ -106,6 +139,8 @@ export async function updateUserTasteProfile(userId) {
         taste_tags: tags,
         affinity_score: affinityScore,
         articles_read_count: history.length,
+        predicted_demographics: predictedDemographics,
+        audience_segments: topAudiences,
         profile_evolution: evolution,
         last_updated: new Date().toISOString()
       }, {

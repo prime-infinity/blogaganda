@@ -125,3 +125,7 @@ CREATE TRIGGER update_taste_profile_timestamp
 BEFORE UPDATE ON user_taste_profiles
 FOR EACH ROW
 EXECUTE FUNCTION update_taste_profile_timestamp();
+
+-- Add audience_segments column for cultural profiling
+ALTER TABLE user_taste_profiles 
+ADD COLUMN IF NOT EXISTS audience_segments TEXT[] DEFAULT '{}';

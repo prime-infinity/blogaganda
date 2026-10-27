@@ -61,8 +61,25 @@ export default function Profile() {
             <span className="stat-value">{(profile.affinity_score || 0).toFixed(2)}</span>
             <span className="stat-label">Affinity Score</span>
           </div>
+          {profile.predicted_demographics && (
+            <div className="stat">
+              <span className="stat-value">{profile.predicted_demographics.ageGroup}</span>
+              <span className="stat-label">Predicted Age</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {profile.audience_segments && profile.audience_segments.length > 0 && (
+        <section className="profile-section">
+          <h2>👥 Your Audience Segments</h2>
+          <div className="tags-grid">
+            {profile.audience_segments.map(segment => (
+              <span key={segment} className="taste-tag">{segment}</span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {profile.taste_tags && profile.taste_tags.length > 0 && (
         <section className="profile-section">
