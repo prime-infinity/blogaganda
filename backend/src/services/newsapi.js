@@ -10,21 +10,21 @@ const NEWS_API_URL = 'https://newsapi.org/v2';
 const DATE_PERIOD = 1;
 
 /**
- * Get date range for specified period
- * Period 1: Last 30 days
- * Period 2: 31-60 days ago
- * Period 3: 61-90 days ago
- * Period 4: 91-120 days ago
- * Period 5: 121-150 days ago
+ * Get date range for specified period (all within last 30 days for free tier)
+ * Period 1: Days 0-6 (last week)
+ * Period 2: Days 7-13
+ * Period 3: Days 14-20
+ * Period 4: Days 21-27
+ * Period 5: Days 28-30
  */
 function getDateRange(period) {
   const now = new Date();
   const dateRanges = {
-    1: { from: 30, to: 0 },      // Last 30 days
-    2: { from: 60, to: 31 },     // 31-60 days ago
-    3: { from: 90, to: 61 },     // 61-90 days ago
-    4: { from: 120, to: 91 },    // 91-120 days ago
-    5: { from: 150, to: 121 }    // 121-150 days ago
+    1: { from: 6, to: 0 },       // Last 7 days
+    2: { from: 13, to: 7 },      // 7-13 days ago
+    3: { from: 20, to: 14 },     // 14-20 days ago
+    4: { from: 27, to: 21 },     // 21-27 days ago
+    5: { from: 30, to: 28 }      // 28-30 days ago
   };
 
   const range = dateRanges[period] || dateRanges[1];
