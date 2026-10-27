@@ -75,23 +75,30 @@ export async function updateUserTasteProfile(userId) {
     if (demographics?.results?.demographics?.[0]) {
       const demoData = demographics.results.demographics[0].query;
       
+      console.log(`📊 Raw Qloo demographics response:`, JSON.stringify(demoData, null, 2));
+      
       // Find highest age affinity
       const ageScores = demoData.age || {};
       const topAge = Object.entries(ageScores)
         .sort(([, a], [, b]) => b - a)[0];
       
       const ageGroup = topAge ? topAge[0].replace(/_/g, ' ') : 'Unknown';
-      const genderSkew = (demoData.gender?.male || 0) > 0 ? 'Male-skewing' : 
-                         (demoData.gender?.female || 0) > 0 ? 'Female-skewing' : 'Balanced';
+      const genderScores = demoData.gender || {};
+      const maleScore = genderScores.male || 0;
+      const femaleScore = genderScores.female || 0;
+      
+      const genderSkew = maleScore > femaleScore ? `Male-skewing (${maleScore.toFixed(3)} vs ${femaleScore.toFixed(3)})` : 
+                         femaleScore > maleScore ? `Female-skewing (${femaleScore.toFixed(3)} vs ${maleScore.toFixed(3)})` : 
+                         'Balanced';
       
       predictedDemographics = {
         ageGroup,
         genderSkew,
         ageAffinities: ageScores,
-        genderAffinities: demoData.gender || {}
+        genderAffinities: genderScores
       };
 
-      console.log(`📊 Demographics: ${ageGroup}, ${genderSkew}`);
+      console.log(`📊 Computed: ${ageGroup}, ${genderSkew}`);
     }
 
     // Audience segments feature disabled (deprecated Qloo endpoint)
