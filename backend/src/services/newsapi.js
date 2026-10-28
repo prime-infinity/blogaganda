@@ -4,7 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const NEWS_API_KEY = process.env.NEWS_API_KEY;
+const NEWS_DATA_API_KEY = process.env.NEWS_DATA_API_KEY;
 const NEWS_API_URL = 'https://newsapi.org/v2';
+const NEWS_DATA_URL = 'https://newsdata.io/api/1';
+
+// Track which API to use (alternating with 2:1 ratio for NewsData:NewsAPI)
+let requestCounter = 0;
 
 // ⚙️ CHANGE THIS BEFORE EACH SEED RUN (1-5)
 const DATE_PERIOD = 1;
@@ -108,3 +113,117 @@ export async function fetchTopHeadlines(country = 'us', pageSize = 100) {
   const data = await response.json();
   return data.articles || [];
 }
+
+/**
+ * Search NewsData.io for articles mentioning specific entities
+ */
+async function searchNewsDataIO(entityName, limit = 5) {
+  const url = `${NEWS_DATA_URL}/latest?apikey=${NEWS_DATA_API_KEY}&qInTitle=${encodeURIComponent(entityName)}&language=en&size=${limit}`;
+
+  console.log(`   🔷 Using NewsData.io API`);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`   ❌ NewsData.io failed: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.status !== 'success') {
+      console.error(`   ❌ NewsData.io error: ${data.status}`);
+      return null;
+    }
+
+    const articles = data.results || [];
+    console.log(`   Found ${articles.length} articles`);
+    
+    return articles.map(article => ({
+      title: article.title,
+      description: article.description,
+      url: article.link,
+      urlToImage: article.image_url,
+      publishedAt: article.pubDate,
+      source: article.source_id || 'NewsData',
+      content: article.description || article.title // Use description as content for free tier
+    }));
+  } catch (error) {
+    console.error(`   ❌ NewsData.io error:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Search NewsAPI for articles (fallback)
+ */
+async function searchNewsAPI(entityName, limit = 5) {
+  const url = `https://newsapi.org/v2/everything?q="${entityName}"&language=en&sortBy=relevancy&pageSize=${limit}&apiKey=${NEWS_API_KEY}`;
+
+  console.log(`   🔶 Using NewsAPI (fallback)`);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`   ❌ NewsAPI failed: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const articles = data.articles || [];
+    
+    console.log(`   Found ${articles.length} articles`);
+    
+    return articles.map(article => ({
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      urlToImage: article.urlToImage,
+      publishedAt: article.publishedAt,
+      source: article.source?.name || 'NewsAPI',
+      content: article.content
+    }));
+  } catch (error) {
+    console.error(`   ❌ NewsAPI error:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Search for articles using multi-source strategy
+ * NewsAPI (100/day, has full content) used as primary
+ * NewsData.io (200/day, no content on free tier) as fallback
+ */
+export async function searchArticlesByEntity(entityName, limit = 5) {
+  console.log(`🔍 Searching for: "${entityName}"`);
+  
+  requestCounter++;
+  
+  // Prioritize NewsAPI (has full content) for most requests
+  const useNewsAPI = requestCounter % 4 !== 0; // 3 out of 4 = 75% NewsAPI
+  
+  let articles;
+  
+  if (useNewsAPI) {
+    articles = await searchNewsAPI(entityName, limit);
+    // Fallback to NewsData if NewsAPI fails
+    if (!articles || articles.length === 0) {
+      console.log(`   ⚠️ NewsAPI returned nothing, trying NewsData.io...`);
+      articles = await searchNewsDataIO(entityName, limit);
+    }
+  } else {
+    articles = await searchNewsDataIO(entityName, limit);
+    // Fallback to NewsAPI if NewsData fails
+    if (!articles || articles.length === 0) {
+      console.log(`   ⚠️ NewsData.io returned nothing, trying NewsAPI...`);
+      articles = await searchNewsAPI(entityName, limit);
+    }
+  }
+
+  if (!articles || articles.length === 0) {
+    console.log(`   ❌ No articles found from any source`);
+    return [];
+  }
+
+  return articles;
+}
+

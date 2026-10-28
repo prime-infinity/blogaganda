@@ -1,5 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { getInsights, getTasteTags, getDemographics } from './qloo.js';
+import { getInsights, getTasteTags, getDemographics, enrichEntitiesWithQloo } from './qloo.js';
+import { searchArticlesByEntity } from './newsapi.js';
+import { extractEntities } from './nlp.js';
 
 /**
  * Build or update user's taste profile based on reading history
@@ -274,7 +276,7 @@ export async function generateRecommendations(userId) {
         }
       });
 
-      if (score > 0.3) {
+      if (score >= 0.95) {
         recommendations.push({
           article_id: article.id,
           title: article.title,
@@ -290,6 +292,14 @@ export async function generateRecommendations(userId) {
     const topRecs = recommendations.slice(0, 10);
 
     console.log(`📋 Found ${recommendations.length} potential recommendations, keeping top ${topRecs.length}`);
+
+    // 🔥 DYNAMIC ARTICLE FETCHING: If < 3 recommendations, fetch fresh articles
+    if (topRecs.length < 3) {
+      console.log(`\n🚀 DYNAMIC FETCH TRIGGERED (only ${topRecs.length} matches found)`);
+      const dynamicRecs = await fetchDynamicArticles(userId, profile, affinityMap, userEntities);
+      topRecs.push(...dynamicRecs);
+      console.log(`✅ Total recommendations after dynamic fetch: ${topRecs.length}\n`);
+    }
 
     // Upsert recommendations
     if (topRecs.length > 0) {
@@ -316,4 +326,160 @@ export async function generateRecommendations(userId) {
     console.error('Failed to generate recommendations:', error);
     return [];
   }
+}
+
+
+/**
+ * Fetch and process articles dynamically based on predicted entities
+ */
+async function fetchDynamicArticles(userId, profile, affinityMap, userEntities) {
+  console.log(`📡 Fetching dynamic articles for top predicted entities...`);
+  
+  // Get top 5 entities across all categories (highest affinity)
+  const allPredictions = [];
+  ['people', 'brands', 'places', 'movies', 'tvShows'].forEach(category => {
+    profile.qloo_affinities[category]?.forEach(entity => {
+      if (entity.entity_id && entity.query?.affinity) {
+        allPredictions.push({
+          name: entity.name,
+          id: entity.entity_id,
+          affinity: entity.query.affinity,
+          category
+        });
+      }
+    });
+  });
+
+  // Sort by affinity and take top 5
+  allPredictions.sort((a, b) => b.affinity - a.affinity);
+  const topEntities = allPredictions.slice(0, 5);
+
+  console.log(`🎯 Top 5 entities to search:`);
+  topEntities.forEach(e => console.log(`   - ${e.name} (${e.category}, affinity: ${e.affinity.toFixed(3)})`));
+
+  const dynamicRecommendations = [];
+
+  for (const entity of topEntities) {
+    console.log(`\n🔍 Searching for articles about: "${entity.name}"`);
+    
+    // Search NewsAPI
+    const articles = await searchArticlesByEntity(entity.name, 3);
+    
+    if (articles.length === 0) {
+      console.log(`   ⚠️ No articles found for "${entity.name}"`);
+      continue;
+    }
+
+    // Process each article
+    for (const article of articles) {
+      console.log(`   📰 Processing: "${article.title.slice(0, 60)}..."`);
+      
+      // Extract entities from article
+      const extractedEntities = await extractEntities(
+        article.content || article.description || '',
+        article.title,
+        article.description
+      );
+
+      if (Object.values(extractedEntities).flat().length === 0) {
+        console.log(`      ✗ No entities extracted, skipping`);
+        continue;
+      }
+
+      // Enrich with Qloo
+      const enrichedEntities = await enrichEntitiesWithQloo(extractedEntities);
+      
+      if (enrichedEntities.length === 0) {
+        console.log(`      ✗ No Qloo enrichment, skipping`);
+        continue;
+      }
+
+      console.log(`      ✓ Extracted ${enrichedEntities.length} entities`);
+
+      // Check if article already exists (by URL)
+      const { data: existing } = await supabaseAdmin
+        .from('articles')
+        .select('id')
+        .eq('url', article.url)
+        .single();
+
+      let articleId;
+
+      if (existing) {
+        console.log(`      → Article already exists in database`);
+        articleId = existing.id;
+      } else {
+        // Save to database
+        const { data: newArticle, error } = await supabaseAdmin
+          .from('articles')
+          .insert({
+            title: article.title,
+            description: article.description,
+            url: article.url,
+            image_url: article.urlToImage,
+            published_at: article.publishedAt,
+            source: article.source,
+            entities: enrichedEntities,
+            tags: [] // No tags for dynamic articles
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error(`      ✗ Failed to save article:`, error.message);
+          continue;
+        }
+
+        articleId = newArticle.id;
+        console.log(`      ✓ Saved to database (ID: ${articleId.slice(0, 8)}...)`);
+      }
+
+      // Calculate recommendation score
+      let score = 0;
+      let matchedEntities = [];
+
+      // PRIMARY: Score based on the entity we searched for (WHY we fetched this article)
+      const searchedEntityAffinity = entity.affinity;
+      score += searchedEntityAffinity;
+      matchedEntities.push(entity.name);
+      console.log(`      💡 Base score from searched entity "${entity.name}": ${searchedEntityAffinity.toFixed(3)}`);
+
+      // SECONDARY: Bonus points if article entities also match user profile
+      let bonusScore = 0;
+      enrichedEntities.forEach(ent => {
+        // Match with user's read entities
+        if (ent.qlooId && userEntities.has(ent.qlooId)) {
+          bonusScore += 0.3;
+          matchedEntities.push(`${ent.name} (read)`);
+          console.log(`      + Bonus 0.3 for user-read entity: ${ent.name}`);
+        }
+        // Match with other Qloo-predicted affinities
+        if (ent.qlooId && affinityMap.has(ent.qlooId)) {
+          const affinity = affinityMap.get(ent.qlooId);
+          bonusScore += affinity * 0.5; // Half credit for secondary matches
+          matchedEntities.push(`${ent.name} (${affinity.toFixed(2)})`);
+          console.log(`      + Bonus ${(affinity * 0.5).toFixed(3)} for predicted entity: ${ent.name}`);
+        }
+      });
+
+      score += bonusScore;
+      console.log(`      📊 Total score: ${score.toFixed(3)} (base: ${searchedEntityAffinity.toFixed(3)} + bonus: ${bonusScore.toFixed(3)})`);
+
+      if (score >= 0.95) {
+        dynamicRecommendations.push({
+          article_id: articleId,
+          title: article.title,
+          affinity_score: score,
+          matched_entities: matchedEntities,
+          reason: `Dynamic: Matches your interest in ${entity.name}`
+        });
+        console.log(`      ✓ Added to recommendations (score: ${score.toFixed(2)})`);
+      } else {
+        console.log(`      ✗ Score too low (${score.toFixed(2)}), skipping`);
+      }
+    }
+  }
+
+  console.log(`\n📊 Dynamic fetch complete: ${dynamicRecommendations.length} new recommendations`);
+  return dynamicRecommendations.slice(0, 10);
 }

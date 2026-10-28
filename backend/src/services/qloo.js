@@ -96,6 +96,7 @@ export async function getInsights(entityIds, filterType = 'urn:entity:brand', op
 
   // Add entity signals
   if (entityIds && entityIds.length > 0) {
+    console.log(`[DEBUG] Qloo ${filterType} with ${entityIds.length} entities: ${entityIds[0]}`);
     entityIds.forEach(id => {
       params.append('signal.interests.entities', id);
     });
@@ -113,7 +114,10 @@ export async function getInsights(entityIds, filterType = 'urn:entity:brand', op
   });
 
   if (!response.ok) {
-    console.error('Qloo insights failed:', response.status);
+    const errorText = await response.text();
+    console.error(`Qloo insights failed (${filterType}): ${response.status}`);
+    console.error(`   Error: ${errorText.slice(0, 300)}`);
+    console.error(`   Entity IDs: ${entityIds.join(', ')}`);
     return null;
   }
 
