@@ -1,0 +1,61 @@
+BLOGAGANDA MVP STATUS
+=====================
+
+Checking PROJECT_CONCEPT.txt Against Implementation:
+
+✅ 1. DEEP CULTURAL PROFILING (Admin Dashboard)
+- ✅ Extract entities from articles (5 types: people, brands, places, movies, tvShows)
+- ✅ Query Qloo for cross-category affinities (25 predictions)
+- ✅ Build live taste graph: "User has 0.91 affinity..."
+- ✅ Show demographic predictions (age: 30-34, gender: Female-skewing)
+- ❌ Geo-location cultural fit (not implemented)
+- ❌ Brand partnership opportunities (not explicitly shown)
+- ✅ Display: "User cluster: 25-34, Female-skewing, high affinity with [brands]..."
+
+Status: 80% done - demographics showing, missing geo/brand partnership insights
+
+---
+
+✅ 2. PROPAGANDA-GRADE PERSONALIZATION (User Side)
+- ⚠️ Don't just recommend similar articles → Partially working (recommendations generate but low overlap)
+- ⚠️ Recommend articles with HIGH AFFINITY entities → Working but weak (0-1 overlap)
+- ❌ Example flow: Succession → luxury watches, fine dining → Michelin article → Not working (requires dynamic fetching)
+
+Status: 40% done - engine works, but no articles to recommend
+
+---
+
+✅ 3. CULTURAL MANIPULATION METRICS
+- ✅ Engagement velocity: Profile evolution shows updates count
+- ✅ Affinity drift tracking: Shows score changes over time (0.92 → 0.91 → 0.89)
+- ❌ Cross-category conversion: "Started reading tech news, now 67% likely to engage with luxury travel" → Not explicitly calculated
+
+Status: 70% done - evolution tracking works, missing conversion metrics
+
+---
+
+❌ 4. B2B REVENUE ANGLE
+- ❌ Publishers can identify which entities/topics to cover
+- ❌ Predict virality by mapping entity affinities
+- ❌ Sell "cultural targeting" to advertisers
+
+Status: 0% done - this is pitch material, not implemented features
+
+---
+
+OVERALL MVP STATUS: ~60% Complete
+
+What's Working:
+- Entity extraction + Qloo enrichment
+- Profile building + evolution tracking
+- Demographics prediction
+- Admin dashboard with affinity drift
+- Recommendation engine (just needs articles to recommend)
+
+What's Missing:
+- Dynamic article fetching (the KEY feature for personalization)
+- Cross-category conversion tracking
+- Geo-cultural fit
+- B2B analytics (not MVP critical)
+
+Verdict: Core infrastructure done. Need dynamic fetching to make it compelling for demo.
