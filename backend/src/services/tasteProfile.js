@@ -50,11 +50,11 @@ export async function updateUserTasteProfile(userId) {
 
     // Get cross-category insights from Qloo (entertainment/lifestyle focus)
     const [personInsights, brandInsights, placeInsights, movieInsights, tvInsights, demographics, tasteTags] = await Promise.all([
-      getInsights(uniqueEntities, 'urn:entity:person', { limit: 5 }),     // Celebrities, actors, chefs
-      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 5 }),      // Fashion, luxury, restaurants
-      getInsights(uniqueEntities, 'urn:entity:place', { limit: 5 }),      // Venues, destinations
-      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 5 }),      // Films
-      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 5 }),    // TV/streaming
+      getInsights(uniqueEntities, 'urn:entity:person', { limit: 3 }),     // Celebrities, actors, chefs
+      getInsights(uniqueEntities, 'urn:entity:brand', { limit: 3 }),      // Fashion, luxury, restaurants
+      getInsights(uniqueEntities, 'urn:entity:place', { limit: 3 }),      // Venues, destinations
+      getInsights(uniqueEntities, 'urn:entity:movie', { limit: 3 }),      // Films
+      getInsights(uniqueEntities, 'urn:entity:tv_show', { limit: 3 }),    // TV/streaming
       getDemographics(uniqueEntities),                                     // Age/gender predictions
       getTasteTags(uniqueEntities)
     ]);
@@ -276,7 +276,7 @@ export async function generateRecommendations(userId) {
         }
       });
 
-      if (score >= 0.95) {
+      if (score >= 0.93) {
         recommendations.push({
           article_id: article.id,
           title: article.title,
@@ -350,11 +350,11 @@ async function fetchDynamicArticles(userId, profile, affinityMap, userEntities) 
     });
   });
 
-  // Sort by affinity and take top 5
+  // Sort by affinity and take top 3
   allPredictions.sort((a, b) => b.affinity - a.affinity);
-  const topEntities = allPredictions.slice(0, 5);
+  const topEntities = allPredictions.slice(0, 3);
 
-  console.log(`🎯 Top 5 entities to search:`);
+  console.log(`🎯 Top 3 entities to search:`);
   topEntities.forEach(e => console.log(`   - ${e.name} (${e.category}, affinity: ${e.affinity.toFixed(3)})`));
 
   const dynamicRecommendations = [];
@@ -362,39 +362,50 @@ async function fetchDynamicArticles(userId, profile, affinityMap, userEntities) 
   for (const entity of topEntities) {
     console.log(`\n🔍 Searching for articles about: "${entity.name}"`);
     
-    // Search NewsAPI
-    const articles = await searchArticlesByEntity(entity.name, 3);
+    // Search NewsAPI (reduced from 3 to 1)
+    const articles = await searchArticlesByEntity(entity.name, 1);
     
     if (articles.length === 0) {
       console.log(`   ⚠️ No articles found for "${entity.name}"`);
       continue;
     }
 
-    // Process each article
-    for (const article of articles) {
-      console.log(`   📰 Processing: "${article.title.slice(0, 60)}..."`);
+    // Process all articles in parallel
+    const articleResults = await Promise.all(
+      articles.map(async (article) => {
+        console.log(`   📰 Processing: "${article.title.slice(0, 60)}..."`);
+        
+        // Extract entities from article
+        const extractedEntities = await extractEntities(
+          article.content || article.description || '',
+          article.title,
+          article.description
+        );
+
+        if (Object.values(extractedEntities).flat().length === 0) {
+          console.log(`      ✗ No entities extracted, skipping`);
+          return null;
+        }
+
+        // Enrich with Qloo
+        const enrichedEntities = await enrichEntitiesWithQloo(extractedEntities);
+        
+        if (enrichedEntities.length === 0) {
+          console.log(`      ✗ No Qloo enrichment, skipping`);
+          return null;
+        }
+
+        console.log(`      ✓ Extracted ${enrichedEntities.length} entities`);
+        
+        return { article, enrichedEntities };
+      })
+    );
+
+    // Process results
+    for (const result of articleResults) {
+      if (!result) continue;
       
-      // Extract entities from article
-      const extractedEntities = await extractEntities(
-        article.content || article.description || '',
-        article.title,
-        article.description
-      );
-
-      if (Object.values(extractedEntities).flat().length === 0) {
-        console.log(`      ✗ No entities extracted, skipping`);
-        continue;
-      }
-
-      // Enrich with Qloo
-      const enrichedEntities = await enrichEntitiesWithQloo(extractedEntities);
-      
-      if (enrichedEntities.length === 0) {
-        console.log(`      ✗ No Qloo enrichment, skipping`);
-        continue;
-      }
-
-      console.log(`      ✓ Extracted ${enrichedEntities.length} entities`);
+      const { article, enrichedEntities } = result;
 
       // Check if article already exists (by URL)
       const { data: existing } = await supabaseAdmin
@@ -465,7 +476,7 @@ async function fetchDynamicArticles(userId, profile, affinityMap, userEntities) 
       score += bonusScore;
       console.log(`      📊 Total score: ${score.toFixed(3)} (base: ${searchedEntityAffinity.toFixed(3)} + bonus: ${bonusScore.toFixed(3)})`);
 
-      if (score >= 0.95) {
+      if (score >= 0.93) {
         dynamicRecommendations.push({
           article_id: articleId,
           title: article.title,

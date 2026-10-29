@@ -168,28 +168,46 @@ export async function enrichEntitiesWithQloo(entities) {
     tvShows: ['urn:entity:tv_show']       // TV shows, streaming content
   };
 
+  // Collect all entities to process
+  const entitiesToProcess = [];
   for (const [category, names] of Object.entries(entities)) {
     if (!names || names.length === 0) continue;
     const qlooTypes = typeMap[category] || [];
     
     for (const name of names) {
       if (!name || name.length < 2) continue;
-      
-      const results = await searchQlooEntities(name, qlooTypes);
-      
-      if (results.length > 0) {
-        enriched.push({
-          name: results[0].name || name,
-          qlooId: results[0].entity_id,
-          type: results[0].subtype || results[0].type,
-          category: category
-        });
-        console.log(`   ✓ ${name} → ${results[0].entity_id}`);
-      } else {
-        console.log(`   ✗ ${name} (not found in Qloo)`);
-      }
-      
-      // Small delay to avoid rate limiting
+      entitiesToProcess.push({ name, category, qlooTypes });
+    }
+  }
+
+  // Process entities in parallel batches of 5
+  const batchSize = 5;
+  for (let i = 0; i < entitiesToProcess.length; i += batchSize) {
+    const batch = entitiesToProcess.slice(i, i + batchSize);
+    
+    const results = await Promise.all(
+      batch.map(async ({ name, category, qlooTypes }) => {
+        const results = await searchQlooEntities(name, qlooTypes);
+        
+        if (results.length > 0) {
+          console.log(`   ✓ ${name} → ${results[0].entity_id}`);
+          return {
+            name: results[0].name || name,
+            qlooId: results[0].entity_id,
+            type: results[0].subtype || results[0].type,
+            category: category
+          };
+        } else {
+          console.log(`   ✗ ${name} (not found in Qloo)`);
+          return null;
+        }
+      })
+    );
+    
+    enriched.push(...results.filter(r => r !== null));
+    
+    // Small delay between batches to avoid rate limiting
+    if (i + batchSize < entitiesToProcess.length) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
