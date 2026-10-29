@@ -301,12 +301,16 @@ export async function generateRecommendations(userId) {
       console.log(`✅ Total recommendations after dynamic fetch: ${topRecs.length}\n`);
     }
 
-    // Upsert recommendations
+    // Upsert recommendations (deduplicate by article_id first)
     if (topRecs.length > 0) {
+      const uniqueRecs = Array.from(
+        new Map(topRecs.map(rec => [rec.article_id, rec])).values()
+      );
+
       const { error: recError } = await supabaseAdmin
         .from('article_recommendations')
         .upsert(
-          topRecs.map(rec => ({
+          uniqueRecs.map(rec => ({
             user_id: userId,
             article_id: rec.article_id,
             affinity_score: rec.affinity_score,
@@ -316,7 +320,7 @@ export async function generateRecommendations(userId) {
         );
 
       if (recError) console.error('Failed to save recommendations:', recError);
-      else console.log(`✅ Saved ${topRecs.length} recommendations to database`);
+      else console.log(`✅ Saved ${uniqueRecs.length} unique recommendations to database`);
     } else {
       console.log(`⚠️ No recommendations generated (no matching articles found)`);
     }
