@@ -3,7 +3,7 @@ BLOGAGANDA - DEMO INSTRUCTIONS
 
 🎯 QUICK START:
 
-1. Visit the live demo: [YOUR_DEPLOYED_URL_HERE]
+1. Visit the live demo: https://blogaganda.vercel.app
 
 2. CREATE ACCOUNT or use existing test users:
    - Email: blogger1@blogaganda.com (or blogger2, blogger3, blogger4, blogger5)
