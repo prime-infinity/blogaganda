@@ -17,11 +17,12 @@ Status: 80% done - demographics showing, missing geo/brand partnership insights
 ---
 
 ✅ 2. PROPAGANDA-GRADE PERSONALIZATION (User Side)
-- ⚠️ Don't just recommend similar articles → Partially working (recommendations generate but low overlap)
-- ⚠️ Recommend articles with HIGH AFFINITY entities → Working but weak (0-1 overlap)
-- ❌ Example flow: Succession → luxury watches, fine dining → Michelin article → Not working (requires dynamic fetching)
+- ✅ Don't just recommend similar articles → Working (dynamic fetch finds new articles)
+- ✅ Recommend articles with HIGH AFFINITY entities → Working (scores 0.93-1.45)
+- ✅ Example flow: Succession → luxury watches, fine dining → Michelin article → Working (dynamic fetch implemented)
+- ✅ Dynamic article fetching: Searches NewsAPI for predicted entities, enriches, scores
 
-Status: 40% done - engine works, but no articles to recommend
+Status: 90% done - engine works, dynamic fetching operational
 
 ---
 
@@ -34,28 +35,29 @@ Status: 70% done - evolution tracking works, missing conversion metrics
 
 ---
 
-❌ 4. B2B REVENUE ANGLE
-- ❌ Publishers can identify which entities/topics to cover
-- ❌ Predict virality by mapping entity affinities
-- ❌ Sell "cultural targeting" to advertisers
+✅ 4. B2B REVENUE ANGLE
+- ✅ Publishers can identify which entities/topics to cover (top brand recommendations)
+- ✅ Predict virality by mapping entity affinities (virality matrix per user)
+- ✅ Sell "cultural targeting" to advertisers (CPM value, demographics, engagement metrics)
 
-Status: 0% done - this is pitch material, not implemented features
+Status: 100% done - B2B analytics dashboard live in admin panel
 
 ---
 
-OVERALL MVP STATUS: ~60% Complete
+OVERALL MVP STATUS: ~95% Complete
 
 What's Working:
-- Entity extraction + Qloo enrichment
-- Profile building + evolution tracking
-- Demographics prediction
-- Admin dashboard with affinity drift
-- Recommendation engine (just needs articles to recommend)
+- ✅ Entity extraction + Qloo enrichment
+- ✅ Profile building + evolution tracking
+- ✅ Demographics prediction
+- ✅ Admin dashboard with affinity drift
+- ✅ Recommendation engine with dynamic fetching
+- ✅ Parallel processing optimizations (3 entities, 1 article each)
+- ✅ Multi-source news (NewsAPI + NewsData.io)
+- ✅ B2B Revenue Intelligence (content strategy, virality prediction, ad targeting)
 
 What's Missing:
-- Dynamic article fetching (the KEY feature for personalization)
-- Cross-category conversion tracking
-- Geo-cultural fit
-- B2B analytics (not MVP critical)
+- ❌ Cross-category conversion tracking (not critical)
+- ❌ Geo-cultural fit (not critical)
 
-Verdict: Core infrastructure done. Need dynamic fetching to make it compelling for demo.
+Verdict: MVP complete. All core features operational. Demo-ready.

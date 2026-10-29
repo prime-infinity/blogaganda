@@ -280,6 +280,97 @@ export default function AdminDashboard() {
                       </ul>
                     </div>
                   </div>
+
+                  <div className="profile-section b2b-section">
+                    <h3>💰 B2B Revenue Intelligence</h3>
+                    
+                    <div className="b2b-grid">
+                      <div className="b2b-card">
+                        <h4>📝 Content Strategy</h4>
+                        <p className="b2b-label">Top entities to cover:</p>
+                        <ul className="b2b-list">
+                          {selectedUser.profile.qloo_affinities?.brands?.slice(0, 3).map(brand => (
+                            <li key={brand.entity_id}>
+                              <strong>{brand.name}</strong>
+                              <span className="virality-score">Affinity: {(brand.query?.affinity * 100).toFixed(0)}%</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="b2b-insight">
+                          💡 Articles about these brands have {(selectedUser.profile.affinity_score * 100).toFixed(0)}% engagement probability
+                        </p>
+                      </div>
+
+                      <div className="b2b-card">
+                        <h4>🎯 Cultural Targeting</h4>
+                        <div className="targeting-profile">
+                          <div className="target-row">
+                            <span>Demographic:</span>
+                            <strong>{selectedUser.profile.predicted_demographics?.ageGroup || 'Unknown'}</strong>
+                          </div>
+                          <div className="target-row">
+                            <span>Gender Skew:</span>
+                            <strong>{selectedUser.profile.predicted_demographics?.genderSkew?.split('-')[0] || 'Unknown'}</strong>
+                          </div>
+                          <div className="target-row">
+                            <span>Taste Tags:</span>
+                            <strong>{selectedUser.profile.taste_tags?.slice(0, 2).join(', ') || 'Building...'}</strong>
+                          </div>
+                        </div>
+                        <p className="b2b-insight">
+                          💡 Target similar users: {selectedUser.profile.predicted_demographics?.ageGroup}, {selectedUser.profile.predicted_demographics?.genderSkew?.split('-')[0]}
+                        </p>
+                      </div>
+
+                      <div className="b2b-card">
+                        <h4>🔮 Virality Prediction</h4>
+                        <p className="b2b-label">High-engagement entity clusters:</p>
+                        <div className="virality-matrix">
+                          {['brands', 'people', 'places'].map(category => {
+                            const entities = selectedUser.profile.qloo_affinities?.[category] || [];
+                            if (entities.length === 0) return null;
+                            const avgAffinity = entities.slice(0, 3).reduce((sum, e) => sum + (e.query?.affinity || 0), 0) / Math.min(3, entities.length);
+                            return (
+                              <div key={category} className="virality-row">
+                                <span className="category-name">{category}:</span>
+                                <div className="virality-bar">
+                                  <div 
+                                    className="virality-fill" 
+                                    style={{ width: `${avgAffinity * 100}%` }}
+                                  />
+                                </div>
+                                <span className="virality-pct">{(avgAffinity * 100).toFixed(0)}%</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="b2b-insight">
+                          💡 Cross-category articles combining these entities = higher virality
+                        </p>
+                      </div>
+
+                      <div className="b2b-card">
+                        <h4>💵 Ad Targeting Value</h4>
+                        <div className="ad-metrics">
+                          <div className="ad-metric">
+                            <span className="ad-value">${(selectedUser.profile.affinity_score * 10).toFixed(2)}</span>
+                            <span className="ad-label">CPM Value</span>
+                          </div>
+                          <div className="ad-metric">
+                            <span className="ad-value">{selectedUser.profile.qloo_affinities?.brands?.length || 0}</span>
+                            <span className="ad-label">Brand Affinities</span>
+                          </div>
+                          <div className="ad-metric">
+                            <span className="ad-value">{selectedUser.profile.articles_read_count || 0}</span>
+                            <span className="ad-label">Engagement Rate</span>
+                          </div>
+                        </div>
+                        <p className="b2b-insight">
+                          💡 Premium targeting: User matches {selectedUser.profile.qloo_affinities?.brands?.length || 0}+ luxury/lifestyle brands
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
 

@@ -392,3 +392,179 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* B2B Revenue Intelligence Section */
+.b2b-section {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 2px solid #f093fb;
+  padding: 25px;
+}
+
+.b2b-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.b2b-card {
+  background: #0f0f23;
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid #667eea44;
+  transition: all 0.3s;
+}
+
+.b2b-card:hover {
+  border-color: #f093fb;
+  box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
+  transform: translateY(-2px);
+}
+
+.b2b-card h4 {
+  margin: 0 0 15px;
+  color: #f093fb;
+  font-size: 16px;
+}
+
+.b2b-label {
+  color: #999;
+  font-size: 12px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.b2b-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+}
+
+.b2b-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #16213e;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.virality-score {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.b2b-insight {
+  background: #667eea22;
+  border-left: 3px solid #667eea;
+  padding: 10px;
+  margin: 15px 0 0 0;
+  font-size: 12px;
+  color: #aaa;
+  border-radius: 4px;
+}
+
+.targeting-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.target-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #16213e;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.target-row span {
+  color: #999;
+}
+
+.target-row strong {
+  color: #fff;
+}
+
+.virality-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.virality-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.category-name {
+  color: #ccc;
+  width: 70px;
+  text-transform: capitalize;
+}
+
+.virality-bar {
+  flex: 1;
+  height: 20px;
+  background: #16213e;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.virality-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.5s ease;
+}
+
+.virality-pct {
+  color: #f093fb;
+  font-weight: 700;
+  width: 40px;
+  text-align: right;
+}
+
+.ad-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.ad-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: #16213e;
+  border-radius: 8px;
+  border: 1px solid #667eea33;
+}
+
+.ad-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f093fb;
+  margin-bottom: 5px;
+}
+
+.ad-label {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+}
