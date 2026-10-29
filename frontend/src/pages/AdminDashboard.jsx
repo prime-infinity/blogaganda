@@ -220,6 +220,101 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  <div className="profile-section geo-section">
+                    <h3>🌍 Geo-Cultural Fit</h3>
+                    <p className="geo-subtitle">Regional affinity based on brands, places, and cultural entities</p>
+                    
+                    <div className="geo-grid">
+                      {(() => {
+                        const places = selectedUser.profile.qloo_affinities?.places || [];
+                        const brands = selectedUser.profile.qloo_affinities?.brands || [];
+                        const people = selectedUser.profile.qloo_affinities?.people || [];
+                        
+                        // Calculate regional scores based on entities
+                        const regions = {
+                          'New York': { score: 0, entities: [] },
+                          'Paris': { score: 0, entities: [] },
+                          'London': { score: 0, entities: [] },
+                          'Los Angeles': { score: 0, entities: [] },
+                          'Milan': { score: 0, entities: [] },
+                          'Tokyo': { score: 0, entities: [] }
+                        };
+                        
+                        // Score places
+                        places.forEach(place => {
+                          const affinity = place.query?.affinity || 0;
+                          const name = place.name.toLowerCase();
+                          if (name.includes('paris') || name.includes('french')) regions['Paris'].score += affinity;
+                          else if (name.includes('london') || name.includes('uk')) regions['London'].score += affinity;
+                          else if (name.includes('new york') || name.includes('nyc')) regions['New York'].score += affinity;
+                          else if (name.includes('los angeles') || name.includes('la ')) regions['Los Angeles'].score += affinity;
+                          else if (name.includes('milan') || name.includes('italy')) regions['Milan'].score += affinity;
+                          else if (name.includes('tokyo') || name.includes('japan')) regions['Tokyo'].score += affinity;
+                          
+                          Object.keys(regions).forEach(region => {
+                            if (regions[region].score > 0) regions[region].entities.push(place.name);
+                          });
+                        });
+                        
+                        // Score luxury/fashion brands (strong regional indicators)
+                        brands.forEach(brand => {
+                          const affinity = (brand.query?.affinity || 0) * 0.5; // Lower weight than places
+                          const name = brand.name.toLowerCase();
+                          
+                          // French brands
+                          if (['chanel', 'louis vuitton', 'dior', 'hermès', 'givenchy'].some(b => name.includes(b))) {
+                            regions['Paris'].score += affinity;
+                            regions['Paris'].entities.push(brand.name);
+                          }
+                          // Italian brands
+                          if (['gucci', 'prada', 'versace', 'dolce', 'fendi'].some(b => name.includes(b))) {
+                            regions['Milan'].score += affinity;
+                            regions['Milan'].entities.push(brand.name);
+                          }
+                          // American brands
+                          if (['calvin klein', 'michael kors', 'ralph lauren', 'tommy hilfiger'].some(b => name.includes(b))) {
+                            regions['New York'].score += affinity;
+                            regions['New York'].entities.push(brand.name);
+                          }
+                        });
+                        
+                        // Sort regions by score
+                        const sortedRegions = Object.entries(regions)
+                          .map(([name, data]) => ({ name, ...data }))
+                          .sort((a, b) => b.score - a.score)
+                          .filter(r => r.score > 0);
+                        
+                        if (sortedRegions.length === 0) {
+                          return <div className="empty">Not enough geographic data yet</div>;
+                        }
+                        
+                        return sortedRegions.map(region => (
+                          <div key={region.name} className="geo-card">
+                            <div className="geo-header">
+                              <span className="geo-city">{region.name}</span>
+                              <span className="geo-score">{(region.score * 100).toFixed(0)}%</span>
+                            </div>
+                            <div className="geo-bar">
+                              <div 
+                                className="geo-bar-fill" 
+                                style={{ width: `${Math.min(region.score * 100, 100)}%` }}
+                              />
+                            </div>
+                            {region.entities.length > 0 && (
+                              <div className="geo-entities">
+                                {region.entities.slice(0, 3).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                    
+                    <div className="geo-insight">
+                      💡 Target content: Articles about locations and brands matching top regional affinities
+                    </div>
+                  </div>
+
                   <div className="profile-section">
                     <h3>🎯 Cross-Category Affinities</h3>
                     
