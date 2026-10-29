@@ -67,6 +67,9 @@ export default function Signup() {
         <p className="auth-link">
           Already have an account? <Link to="/login">Log in</Link>
         </p>
+        <p className="auth-link">
+          <Link to="/instructions" style={{ color: '#667eea', fontSize: '14px' }}>📖 Demo Instructions</Link>
+        </p>
       </div>
     </div>
   );

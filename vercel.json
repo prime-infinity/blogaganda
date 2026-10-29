@@ -7,8 +7,7 @@
     },
     "frontend": {
       "root": "frontend",
-      "framework": "vite",
-      "outputDirectory": "dist"
+      "framework": "vite"
     }
   },
   "rewrites": [
@@ -23,13 +22,6 @@
       "destination": {
         "service": "frontend"
       }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/[^.]+",
-      "dest": "/",
-      "status": 200
     }
   ]
 }

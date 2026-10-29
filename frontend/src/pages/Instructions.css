@@ -1,0 +1,145 @@
+.instructions-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.instructions-card {
+  max-width: 800px;
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.instructions-card h1 {
+  margin: 0 0 30px;
+  color: #1a1a2e;
+  font-size: 32px;
+  text-align: center;
+}
+
+.instructions-section {
+  margin-bottom: 30px;
+}
+
+.instructions-section h2 {
+  color: #667eea;
+  font-size: 24px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 10px;
+}
+
+.step {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #667eea;
+}
+
+.step strong {
+  display: block;
+  color: #1a1a2e;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.step p {
+  color: #555;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.step ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.step li {
+  color: #555;
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.step code {
+  background: #667eea22;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.feature {
+  margin-bottom: 20px;
+}
+
+.feature h3 {
+  color: #1a1a2e;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.feature ul {
+  list-style: none;
+  padding: 0;
+}
+
+.feature li {
+  padding: 8px 0;
+  color: #555;
+  line-height: 1.6;
+}
+
+.feature li strong {
+  color: #667eea;
+}
+
+.highlight {
+  background: linear-gradient(135deg, #667eea11, #764ba211);
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid #667eea;
+}
+
+.highlight h2 {
+  border-bottom: none;
+}
+
+.highlight p {
+  color: #1a1a2e;
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.highlight .tagline {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 16px;
+  margin-top: 15px;
+}
+
+.cta-button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: transform 0.2s;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}

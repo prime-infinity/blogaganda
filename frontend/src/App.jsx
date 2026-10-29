@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import Feed from './pages/Feed';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import Instructions from './pages/Instructions';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -19,6 +20,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/instructions" element={<Instructions />} />
           <Route path="/feed" element={<PrivateRoute><Feed /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
