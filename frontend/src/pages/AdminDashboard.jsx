@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userDetailLoading, setUserDetailLoading] = useState(false);
 
   useEffect(() => {
     if (!user?.isAdmin) {
@@ -36,11 +37,15 @@ export default function AdminDashboard() {
   };
 
   const handleUserClick = async (userId) => {
+    setUserDetailLoading(true);
+    setSelectedUser(null); // Clear previous data
     try {
       const res = await getAdminUserDetail(userId);
       setSelectedUser(res.data);
     } catch (error) {
       console.error('Failed to load user detail:', error);
+    } finally {
+      setUserDetailLoading(false);
     }
   };
 
@@ -113,7 +118,12 @@ export default function AdminDashboard() {
         </div>
 
         <div className="detail-panel">
-          {selectedUser ? (
+          {userDetailLoading ? (
+            <div className="loading-detail">
+              <div className="spinner"></div>
+              <p>Loading user profile...</p>
+            </div>
+          ) : selectedUser ? (
             <>
               <h2>Cultural Profile: {selectedUser.user.username}</h2>
               
